@@ -883,7 +883,7 @@ const API_BASE = window.location.origin + '/api';
 let authToken = localStorage.getItem('uk_accounts_token') || null;
 let currentUser = JSON.parse(localStorage.getItem('uk_accounts_user') || '{}') || null;
 
-async function apiCall(method, endpoint, data) {
+async function apiCall(method, endpoint, data, retries = 3) {
   const opts = {
     method,
     headers: {
@@ -893,18 +893,31 @@ async function apiCall(method, endpoint, data) {
   };
   if (data) opts.body = JSON.stringify(data);
   
-  try {
-    console.log(`[API] ${method} ${API_BASE}${endpoint}`, data);
-    const res = await fetch(`${API_BASE}${endpoint}`, opts);
-    if (!res.ok) {
-      if (res.status === 401) { logout(); throw new Error('Session expired. Please login again.'); }
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP ${res.status}`);
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`[API] Attempt ${attempt}/${retries}: ${method} ${API_BASE}${endpoint}`, data);
+      const res = await fetch(`${API_BASE}${endpoint}`, opts);
+      
+      if (!res.ok) {
+        if (res.status === 401) { logout(); throw new Error('Session expired. Please login again.'); }
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${res.status}`);
+      }
+      
+      console.log(`[API] Success on attempt ${attempt}`);
+      return await res.json();
+    } catch(e) {
+      const isLastAttempt = attempt === retries;
+      console.warn(`[API] Error on attempt ${attempt}/${retries}:`, e.message);
+      
+      if (isLastAttempt) {
+        console.error('API Error (final):', e.message || e);
+        throw new Error(e.message || 'Network error. Please check your connection.');
+      }
+      
+      // Wait before retrying (with backoff)
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     }
-    return await res.json();
-  } catch(e) {
-    console.error('API Error:', e.message || e);
-    throw new Error(e.message || 'Network error. Please check your connection.');
   }
 }
 
