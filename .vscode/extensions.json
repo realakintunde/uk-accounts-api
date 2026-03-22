@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-vscode.rest-client",
+    "ms-vscode.js-debug",
+    "ms-mssql.data-bindings-tools"
+  ]
+}

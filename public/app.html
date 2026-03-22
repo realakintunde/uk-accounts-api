@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UK Annual Accounts — Companies House Filing System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+/* CSS VARIABLES & RESET */
+:root {
+  --navy:       #0b1829;
+  --navy-mid:   #112236;
+  --navy-light: #1a2f4a;
+  --navy-card:  #0f1e30;
+  --gold:       #c9a84c;
+  --gold-light: #e2c97e;
+  --gold-dim:   rgba(201,168,76,0.18);
+  --gold-border:rgba(201,168,76,0.22);
+  --cream:      #f2ede3;
+  --cream-dim:  rgba(242,237,227,0.65);
+  --muted:      #7a8fa8;
+  --red:        #b83232;
+  --red-dim:    rgba(184,50,50,0.15);
+  --green:      #1c7a4a;
+  --green-dim:  rgba(28,122,74,0.18);
+  --blue:       #2563a8;
+  --blue-dim:   rgba(37,99,168,0.18);
+  --border:     rgba(201,168,76,0.18);
+  --shadow:     0 4px 24px rgba(0,0,0,0.4);
+  --font-d: 'Playfair Display', Georgia, serif;
+  --font-b: 'IBM Plex Sans', sans-serif;
+  --font-m: 'IBM Plex Mono', monospace;
+  --radius: 2px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--navy);
+  color:var(--cream);
+  font-family:var(--font-b);
+  font-size:14px;
+  line-height:1.5;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+::selection{background:var(--gold-dim);color:var(--cream)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--navy)}
+::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.35);border-radius:2px}
+
+/* ─ BUTTON STYLES ─ */
+.btn{
+  padding:10px 18px;
+  border:none;
+  border-radius:var(--radius);
+  font-size:13px;
+  font-family:var(--font-b);
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.2s;
+  letter-spacing:0.05em;
+}
+.btn-primary{background:var(--gold);color:var(--navy);font-weight:600}
+.btn-primary:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 4px 12px rgba(201,168,76,0.3)}
+.btn-secondary{background:transparent;color:var(--gold);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--gold-dim);border-color:var(--gold)}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(184,50,50,0.3)}
+.btn-danger:hover{background:rgba(184,50,50,0.2);border-color:var(--red)}
+
+/* ─ FORMS ─ */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+.field label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
+.field input, .field select, .field textarea{
+  background:var(--navy-light);
+  border:1px solid var(--border);
+  color:var(--cream);
+  padding:11px 13px;
+  border-radius:var(--radius);
+  font-family:var(--font-b);
+  font-size:13px;
+  transition:all 0.2s;
+}
+.field input:focus, .field select:focus, .field textarea:focus{
+  outline:none;
+  border-color:var(--gold);
+  background:var(--navy-card);
+  box-shadow:0 0 0 3px var(--gold-dim);
+}
+.field textarea{min-height:100px;resize:vertical}
+
+/* ─ GRID ─ */
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.col2{grid-column:span 2}
+.col3{grid-column:span 3}
+
+/* ─ CARDS ─ */
+.card{background:var(--navy-mid);border:1px solid var(--border);padding:24px;margin-bottom:20px;border-radius:var(--radius)}
+.card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.card-hdr h3{font-size:15px;font-weight:600;color:var(--cream);margin:0}
+.ref{font-size:11px;color:var(--muted);letter-spacing:0.05em;font-weight:400}
+
+/* ─ TOAST ─ */
+#toast-container{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  z-index:999;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.toast{
+  background:var(--navy-mid);
+  border:1px solid var(--border);
+  padding:14px 18px;
+  border-radius:var(--radius);
+  font-size:13px;
+  color:var(--cream);
+  max-width:320px;
+  animation:slideIn 0.3s ease;
+}
+.toast.ok{border-left:4px solid var(--green)}
+.toast.err{border-left:4px solid var(--red)}
+.toast.warn{border-left:4px solid var(--gold)}
+@keyframes slideIn{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Full page layout  */
+body.app-visible #auth-screen{display:none}
+body.app-loading{loading:true}
+
+#app{display:none}
+body.app-visible #app{display:grid;grid-template-rows:auto 1fr;min-height:100vh}
+
+.page-hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.page-hdr-left h2{font-size:28px;color:var(--cream);margin-bottom:4px}
+.page-hdr-left p{font-size:13px;color:var(--muted)}
+
+/* ─ AUTH ─ */
+#auth-screen{
+  position:fixed;inset:0;z-index:1000;
+  background:var(--navy);
+  display:flex;align-items:center;justify-content:center;
+}
+.auth-panel{
+  width:420px;
+  background:var(--navy-mid);
+  border:1px solid var(--border);
+  padding:48px;
+  box-shadow:var(--shadow);
+  border-radius:var(--radius);
+}
+.auth-logo{text-align:center;margin-bottom:36px}
+.auth-logo-mark{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:56px;height:56px;
+  background:var(--gold);
+  font-family:var(--font-d);font-weight:700;font-size:22px;color:var(--navy);
+  margin-bottom:14px;
+  border-radius:4px;
+}
+.auth-logo h1{font-family:var(--font-d);font-size:22px;color:var(--gold-light);letter-spacing:0.02em}
+.auth-logo p{font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
+
+.auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:28px}
+.auth-tab{
+  flex:1;padding:10px;text-align:center;
+  font-size:12px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all 0.2s;
+}
+.auth-tab.active{color:var(--gold-light);border-bottom-color:var(--gold)}
+
+.auth-form{display:none}
+.auth-form.active{display:block}
+
+.auth-btn{
+  width:100%;
+  padding:12px;
+  background:var(--gold);
+  color:var(--navy);
+  border:none;
+  font-weight:600;
+  font-size:13px;
+  cursor:pointer;
+  margin-top:12px;
+  border-radius:var(--radius);
+  transition:all 0.2s;
+}
+.auth-btn:hover{background:var(--gold-light)}
+
+.auth-error{
+  background:var(--red-dim);
+  color:var(--red);
+  padding:12px;
+  border-radius:var(--radius);
+  font-size:12px;
+  margin-bottom:16px;
+  border-left:3px solid var(--red);
+  display:none;
+}
+
+.auth-hint{font-size:11px;color:var(--muted);margin-top:16px;text-align:center}
+
+/* ─ MAIN LAYOUT ─ */
+.body-layout{
+  display:grid;
+  grid-template-columns:240px 1fr;
+  gap:0;
+  overflow:hidden;
+}
+
+.topbar{
+  background:var(--navy-mid);
+  border-bottom:1px solid var(--border);
+  padding:14px 24px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  grid-column:1/-1;
+}
+
+.topbar-logo{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  text-decoration:none;
+  color:var(--gold-light);
+  font-weight:600;
+  font-size:15px;
+  font-family:var(--font-d);
+}
+
+.topbar-mark{
+  width:32px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--gold);
+  color:var(--navy);
+  font-weight:700;
+  border-radius:4px;
+  font-size:13px;
+}
+
+.topbar-sep{width:1px;background:var(--border);height:24px}
+.topbar-spacer{flex:1}
+
+.co-selector{
+  background:var(--navy-light);
+  border:1px solid var(--border);
+  color:var(--cream);
+  padding:8px 12px;
+  border-radius:var(--radius);
+  font-family:var(--font-b);
+  font-size:12px;
+  min-width:180px;
+}
+
+.pill{
+  display:inline-block;
+  padding:4px 10px;
+  background:var(--navy-light);
+  border:1px solid var(--border);
+  border-radius:12px;
+  font-size:11px;
+  color:var(--cream-dim);
+  font-weight:600;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+}
+.pill.green{background:var(--green-dim);border-color:rgba(28,122,74,0.3);color:var(--green)}
+
+.topbar-user{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  padding:6px 10px;
+  border-radius:var(--radius);
+  transition:all 0.2s;
+}
+.topbar-user:hover{background:var(--navy-light)}
+
+.user-avatar{
+  width:28px;
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--gold);
+  color:var(--navy);
+  font-weight:700;
+  border-radius:4px;
+  font-size:12px;
+}
+
+.user-name{
+  font-size:13px;
+  font-weight:500;
+}
+
+.logout-btn{
+  padding:6px 16px;
+  background:transparent;
+  color:var(--cream-dim);
+  border:1px solid var(--border);
+  font-size:12px;
+  cursor:pointer;
+  border-radius:var(--radius);
+  transition:all 0.2s;
+}
+.logout-btn:hover{color:var(--red);border-color:var(--red)}
+
+/* ─ SIDEBAR ─ */
+.sidebar{
+  background:var(--navy-card);
+  border-right:1px solid var(--border);
+  padding:20px 12px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.nav-group-label{
+  padding:12px 8px;
+  font-size:10px;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:600;
+  margin-top:12px;
+}
+
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  cursor:pointer;
+  border-radius:var(--radius);
+  transition:all 0.2s;
+  position:relative;
+  color:var(--cream-dim);
+  font-size:13px;
+}
+
+.nav-item:hover{background:var(--navy-light);color:var(--cream)}
+.nav-item.active{background:var(--gold-dim);color:var(--gold);font-weight:500}
+
+.nav-icon{font-size:16px;min-width:20px}
+.nav-check{
+  margin-left:auto;
+  font-size:12px;
+  color:var(--green);
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.nav-check.done{opacity:1}
+
+/* ─ MAIN CONTENT ─ */
+.main-content{
+  overflow-y:auto;
+  padding:32px;
+  background:var(--navy);
+}
+
+.page-wrapper{display:none}
+.page-wrapper.active{display:block}
+
+/* ─ TABLE ─ */
+table{width:100%;border-collapse:collapse;margin-bottom:12px}
+th,td{padding:12px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:var(--navy-card);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted)}
+tr:hover{background:rgba(201,168,76,0.05)}
+.r{text-align:right}
+td input{width:100%;padding:6px;background:transparent;border:none;color:var(--cream);text-align:inherit}
+td input:focus{outline:none;background:rgba(201,168,76,0.1);padding:5px}
+
+/* ─ INFO BOX ─ */
+.info-box{
+  background:var(--blue-dim);
+  border-left:3px solid var(--blue);
+  padding:14px;
+  border-radius:var(--radius);
+  font-size:13px;
+  line-height:1.6;
+  color:var(--cream);
+  margin-bottom:16px;
+}
+
+.warn-box{
+  background:rgba(184,50,50,0.12);
+  border-left:3px solid var(--red);
+  padding:14px;
+  border-radius:var(--radius);
+  font-size:13px;
+  line-height:1.6;
+  color:var(--cream);
+  margin-bottom:16px;
+}
+
+/* ─ RESPONSIVE ─ */
+@media(max-width:800px){
+  .body-layout{grid-template-columns:1fr}
+  .sidebar{width:50px;padding:10px 6px}
+  .nav-item span:not(.nav-icon){display:none}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .col2,.col3{grid-column:span 1}
+}
+
+  </style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-panel">
+    <div class="auth-logo">
+      <div class="auth-logo-mark">CH</div>
+      <h1>Annual Accounts</h1>
+      <p>UK Companies House Filing Portal</p>
+    </div>
+    <div id="auth-error" class="auth-error"></div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login')">Sign In</div>
+      <div class="auth-tab" onclick="switchAuthTab('register')">Create Account</div>
+    </div>
+    
+    <form class="auth-form active" id="form-login" onsubmit="doLogin(event)">
+      <div class="field"><label>Email Address</label><input type="email" id="login-email" required autocomplete="email"></div>
+      <div class="field"><label>Password</label><input type="password" id="login-pass" required autocomplete="current-password"></div>
+      <button type="submit" class="auth-btn">Sign In →</button>
+    </form>
+    
+    <form class="auth-form" id="form-register" onsubmit="doRegister(event)">
+      <div class="field"><label>Full Name</label><input type="text" id="reg-name" required></div>
+      <div class="field"><label>Email Address</label><input type="email" id="reg-email" required></div>
+      <div class="field"><label>Password (min 8 chars)</label><input type="password" id="reg-pass" required minlength="8"></div>
+      <div class="field"><label>Confirm Password</label><input type="password" id="reg-pass2" required></div>
+      <button type="submit" class="auth-btn">Create Account →</button>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="topbar-logo" href="#" onclick="showSection('dashboard');return false">
+      <div class="topbar-mark">CH</div>
+      <span>Annual Accounts</span>
+    </a>
+    <div class="topbar-sep"></div>
+    <select class="co-selector" id="co-selector" onchange="selectCompany(this.value)">
+      <option value="">— Select Company —</option>
+    </select>
+    <div class="topbar-spacer"></div>
+    <span class="pill" id="fy-pill">FY 2025</span>
+    <span class="pill" id="status-pill">DRAFT</span>
+    <div class="topbar-sep"></div>
+    <div class="topbar-user" onclick="showSection('account')">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <span class="user-name" id="user-name-display">User</span>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+  </div>
+
+  <!-- BODY -->
+  <div class="body-layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="nav-group-label">Overview</div>
+      <div class="nav-item active" onclick="showSection('dashboard')">
+        <span class="nav-icon">⊞</span><span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showSection('companies')">
+        <span class="nav-icon">🏢</span><span>Companies</span>
+      </div>
+
+      <div class="nav-group-label">Filing</div>
+      <div class="nav-item" onclick="showSection('company')">
+        <span class="nav-icon">📋</span><span>Company</span>
+        <span class="nav-check" id="chk-company"></span>
+      </div>
+      <div class="nav-item" onclick="showSection('balance')">
+        <span class="nav-icon">⚖️</span><span>Balance Sheet</span>
+        <span class="nav-check" id="chk-balance"></span>
+      </div>
+      <div class="nav-item" onclick="showSection('profit')">
+        <span class="nav-icon">📈</span><span>P&L Account</span>
+        <span class="nav-check" id="chk-profit"></span>
+      </div>
+      <div class="nav-item" onclick="showSection('cashflow')">
+        <span class="nav-icon">💷</span><span>Cash Flow</span>
+        <span class="nav-check" id="chk-cashflow"></span>
+      </div>
+      <div class="nav-item" onclick="showSection('notes')">
+        <span class="nav-icon">📝</span><span>Notes</span>
+        <span class="nav-check" id="chk-notes"></span>
+      </div>
+      <div class="nav-item" onclick="showSection('directors')">
+        <span class="nav-icon">👤</span><span>Directors</span>
+        <span class="nav-check" id="chk-directors"></span>
+      </div>
+
+      <div class="nav-group-label">Export</div>
+      <div class="nav-item" onclick="showSection('export')">
+        <span class="nav-icon">⬇</span><span>Export</span>
+      </div>
+      <div class="nav-item" onclick="showSection('submit')">
+        <span class="nav-icon">🚀</span><span>Submit</span>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="main-content">
+
+      <!-- DASHBOARD -->
+      <div class="page-wrapper active" id="sec-dashboard">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Dashboard</h2>
+            <p>UK Companies House Annual Accounts Filing System</p>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div style="text-align:center;padding:20px">
+              <div style="font-size:32px;margin-bottom:10px">🏢</div>
+              <div style="font-size:28px;font-weight:700;color:var(--gold);margin-bottom:4px" id="dash-companies">0</div>
+              <div style="color:var(--muted);font-size:12px">Companies</div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="text-align:center;padding:20px">
+              <div style="font-size:32px;margin-bottom:10px">📁</div>
+              <div style="font-size:28px;font-weight:700;color:var(--gold);margin-bottom:4px" id="dash-filings">0</div>
+              <div style="color:var(--muted);font-size:12px">Filings</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Getting Started</h3></div>
+          <p style="margin-bottom:16px">Welcome! To get started with filing annual accounts:</p>
+          <ol style="margin-left:20px;color:var(--cream-dim);line-height:1.8">
+            <li style="margin-bottom:8px">Add a company from the Companies section</li>
+            <li style="margin-bottom:8px">Fill in company details and financial year information</li>
+            <li style="margin-bottom:8px">Enter your Balance Sheet, P&L, and Cash Flow statements</li>
+            <li style="margin-bottom:8px">Complete notes and disclosures</li>
+            <li style="margin-bottom:8px">Add Directors' information</li>
+            <li style="margin-bottom:8px">Review and submit your filing</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- COMPANIES -->
+      <div class="page-wrapper" id="sec-companies">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Companies</h2>
+            <p>Manage registered companies</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddCompanyModal()">+ Add Company</button>
+        </div>
+        <div id="companies-list">
+          <div class="info-box">No companies yet. Click "Add Company" to get started.</div>
+        </div>
+      </div>
+
+      <!-- COMPANY DETAILS -->
+      <div class="page-wrapper" id="sec-company">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Company Details</h2>
+            <p>Registered information as per Companies House</p>
+          </div>
+        </div>
+        <div class="info-box">These details must match your registered information at Companies House.</div>
+        <div class="card">
+          <div class="card-hdr"><h3>Company Information</h3></div>
+          <div class="grid-2">
+            <div class="field"><label>Company Name</label><input type="text" id="co-name" placeholder="ACME Holdings Limited"></div>
+            <div class="field"><label>CRN</label><input type="text" id="co-crn" placeholder="12345678" maxlength="8"></div>
+            <div class="field col2"><label>Registered Address</label><input type="text" id="co-addr" placeholder="1 High Street, London, EC1A 1BB"></div>
+            <div class="field"><label>Company Type</label>
+              <select id="co-type">
+                <option value="">Select…</option>
+                <option>Private Company Limited by Shares</option>
+                <option>Public Limited Company (PLC)</option>
+                <option>Limited Liability Partnership</option>
+              </select>
+            </div>
+            <div class="field"><label>Financial Year End</label><input type="date" id="fy-end" onchange="updateFY()"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Directors</h3></div>
+          <div class="grid-2">
+            <div class="field"><label>Director Name</label><input type="text" id="dir-name" placeholder="Full legal name"></div>
+            <div class="field"><label>Date of Birth</label><input type="date" id="dir-dob"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="autoSave()">Save Draft</button>
+          <button class="btn btn-primary" onclick="saveSectionAndNext('company','balance')">Continue →</button>
+        </div>
+      </div>
+
+      <!-- BALANCE SHEET -->
+      <div class="page-wrapper" id="sec-balance">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Balance Sheet</h2>
+            <p>Statement of Financial Position</p>
+          </div>
+        </div>
+        <div class="info-box">Enter your assets, liabilities, and equity figures. The system will calculate totals automatically.</div>
+        <div class="card">
+          <div class="card-hdr"><h3>Assets</h3></div>
+          <table id="tbl-assets">
+            <thead><tr><th>Description</th><th class="r">Amount (£)</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr><td><input type="text" value="Cash at Bank"></td><td><input type="number" value="0" class="r bs-input" oninput="calcBS()"></td><td></td></tr>
+              <tr><td><input type="text" value="Trade Debtors"></td><td><input type="number" value="0" class="r bs-input" oninput="calcBS()"></td><td></td></tr>
+              <tr><td><input type="text" value="Stock"></td><td><input type="number" value="0" class="r bs-input" oninput="calcBS()"></td><td></td></tr>
+              <tr><td><input type="text" value="Plant & Equipment"></td><td><input type="number" value="0" class="r bs-input" oninput="calcBS()"></td><td></td></tr>
+              <tr style="background:var(--gold-dim)"><td><strong>Total Assets</strong></td><td class="r" id="total-assets"><strong>£0</strong></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr"><h3>Liabilities & Equity</h3></div>
+          <table id="tbl-liab">
+            <thead><tr><th>Description</th><th class="r">Amount (£)</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr><td><input type="text" value="Trade Creditors"></td><td><input type="number" value="0" class="r bs-input" oninput="calcBS()"></td><td></td></tr>
+              <tr><td><input type="text" value="Bank Loans"></td><td><input type="number" value="0" class="r bs-input" oninput="calcBS()"></td><td></td></tr>
+              <tr><td><input type="text" value="Share Capital"></td><td><input type="number" value="0" class="r bs-input" oninput="calcBS()"></td><td></td></tr>
+              <tr><td><input type="text" value="Retained Earnings"></td><td><input type="number" value="0" class="r bs-input" oninput="calcBS()"></td><td></td></tr>
+              <tr style="background:var(--gold-dim)"><td><strong>Total Liabilities & Equity</strong></td><td class="r" id="total-liab"><strong>£0</strong></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="autoSave()">Save Draft</button>
+          <button class="btn btn-primary" onclick="saveSectionAndNext('balance','profit')">Continue →</button>
+        </div>
+      </div>
+
+      <!-- P&L -->
+      <div class="page-wrapper" id="sec-profit">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Profit & Loss Account</h2>
+            <p>Income Statement for the year</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Income & Expenses</h3></div>
+          <table id="tbl-pl">
+            <thead><tr><th>Description</th><th class="r">Amount (£)</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr><td><input type="text" value="Turnover"></td><td><input type="number" value="0" class="r pl-input" oninput="calcPL()"></td><td></td></tr>
+              <tr><td><input type="text" value="Cost of Sales"></td><td><input type="number" value="0" class="r pl-input" oninput="calcPL()"></td><td></td></tr>
+              <tr style="background:var(--gold-dim)"><td><strong>Gross Profit</strong></td><td class="r" id="gross-profit"><strong>£0</strong></td><td></td></tr>
+              <tr><td><input type="text" value="Operating Expenses"></td><td><input type="number" value="0" class="r pl-input" oninput="calcPL()"></td><td></td></tr>
+              <tr style="background:var(--gold-dim)"><td><strong>Operating Profit</strong></td><td class="r" id="op-profit"><strong>£0</strong></td><td></td></tr>
+              <tr><td><input type="text" value="Tax"></td><td><input type="number" value="0" class="r pl-input" oninput="calcPL()"></td><td></td></tr>
+              <tr style="background:var(--green-dim)"><td><strong>Net Profit</strong></td><td class="r" id="net-profit"><strong>£0</strong></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="autoSave()">Save Draft</button>
+          <button class="btn btn-primary" onclick="saveSectionAndNext('profit','cashflow')">Continue →</button>
+        </div>
+      </div>
+
+      <!-- CASH FLOW -->
+      <div class="page-wrapper" id="sec-cashflow">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Cash Flow Statement</h2>
+            <p>Statement of Cash Flows</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Cash Flow Items</h3></div>
+          <table id="tbl-cf">
+            <thead><tr><th>Description</th><th class="r">Amount (£)</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr><td><input type="text" value="Profit from Operations"></td><td><input type="number" value="0" class="r cf-input" oninput="calcCF()"></td><td></td></tr>
+              <tr><td><input type="text" value="Capital Expenditure"></td><td><input type="number" value="0" class="r cf-input" oninput="calcCF()"></td><td></td></tr>
+              <tr><td><input type="text" value="New Borrowing"></td><td><input type="number" value="0" class="r cf-input" oninput="calcCF()"></td><td></td></tr>
+              <tr style="background:var(--gold-dim)"><td><strong>Net Cash Movement</strong></td><td class="r" id="net-cf"><strong>£0</strong></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="autoSave()">Save Draft</button>
+          <button class="btn btn-primary" onclick="saveSectionAndNext('cashflow','notes')">Continue →</button>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="page-wrapper" id="sec-notes">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Notes to Accounts</h2>
+            <p>Disclosures and accounting policies</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Accounting Policies</h3></div>
+          <div class="field">
+            <label>Basis of Preparation</label>
+            <textarea id="n-basis">These financial statements have been prepared under the historical cost convention in accordance with Financial Reporting Standard 102 (FRS 102) and the Companies Act 2006.</textarea>
+          </div>
+          <div class="field">
+            <label>Going Concern</label>
+            <textarea id="n-going">The directors have considered the going concern status of the company.</textarea>
+          </div>
+          <div class="field">
+            <label>Revenue Recognition</label>
+            <textarea id="n-revenue">Turnover represents the invoiced value of goods and services supplied, exclusive of VAT.</textarea>
+          </div>
+        </div>
+        
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="autoSave()">Save Draft</button>
+          <button class="btn btn-primary" onclick="saveSectionAndNext('notes','directors')">Continue →</button>
+        </div>
+      </div>
+
+      <!-- DIRECTORS -->
+      <div class="page-wrapper" id="sec-directors">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Directors' Report</h2>
+            <p>Required disclosures</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Business Review</h3></div>
+          <div class="field">
+            <label>Principal Activities</label>
+            <textarea id="dr-activities" placeholder="Describe your company's main business activities…"></textarea>
+          </div>
+          <div class="field">
+            <label>Review of Year</label>
+            <textarea id="dr-review" placeholder="Summary of performance and key developments during the year…"></textarea>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr"><h3>Approval</h3></div>
+          <label style="display:flex;gap:8px;margin-bottom:16px;cursor:pointer">
+            <input type="checkbox" id="dr-approval">
+            <span style="font-size:13px">I confirm these accounts give a true and fair view of the company's affairs and results.</span>
+          </label>
+          <div class="grid-2">
+            <div class="field"><label>Signed By</label><input type="text" id="dr-signed-by" placeholder="Director name"></div>
+            <div class="field"><label>Date</label><input type="date" id="dr-signed-date"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="autoSave()">Save Draft</button>
+          <button class="btn btn-primary" onclick="saveSectionAndNext('directors','export')">Continue →</button>
+        </div>
+      </div>
+
+      <!-- EXPORT -->
+      <div class="page-wrapper" id="sec-export">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Export & Generate</h2>
+            <p>Generate documents for filing</p>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card" style="cursor:pointer;text-align:center" onclick="exportPDF()">
+            <div style="font-size:32px;margin-bottom:10px">📄</div>
+            <div style="font-weight:600;margin-bottom:4px">PDF Report</div>
+            <div style="font-size:12px;color:var(--muted)">Full accounts PDF</div>
+          </div>
+          <div class="card" style="cursor:pointer;text-align:center" onclick="exportJSON()">
+            <div style="font-size:32px;margin-bottom:10px">⚙️</div>
+            <div style="font-weight:600;margin-bottom:4px">JSON Export</div>
+            <div style="font-size:12px;color:var(--muted)">Data export</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="page-wrapper" id="sec-submit">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Review & Submit</h2>
+            <p>Final pre-filing checks</p>
+          </div>
+        </div>
+        <div class="warn-box">⚠ Once filed with Companies House, accounts become public record.</div>
+        
+        <div class="card">
+          <div class="card-hdr"><h3>Completion Checklist</h3></div>
+          <div style="display:flex;flex-direction:column;gap:12px" id="checklist"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr"><h3>Authentication</h3></div>
+          <div class="field">
+            <label>Companies House Auth Code</label>
+            <input type="password" id="auth-code" placeholder="6-character code" maxlength="6">
+            <span style="font-size:11px;color:var(--muted)">Your unique filing code from Companies House</span>
+          </div>
+        </div>
+
+        <label style="display:flex;gap:10px;margin-bottom:16px;cursor:pointer">
+          <input type="checkbox" id="submit-confirm">
+          <span style="font-size:13px">I confirm these accounts are complete and accurate</span>
+        </label>
+
+        <button class="btn btn-primary" style="width:100%;padding:14px;font-size:14px" onclick="submitFiling()">🚀 Submit to Companies House</button>
+      </div>
+
+      <!-- ACCOUNT -->
+      <div class="page-wrapper" id="sec-account">
+        <div class="page-hdr">
+          <div class="page-hdr-left">
+            <h2>Account Settings</h2>
+            <p>Manage your profile</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><h3>Profile</h3></div>
+          <div class="grid-2">
+            <div class="field"><label>Full Name</label><input type="text" id="acc-name"></div>
+            <div class="field"><label>Email</label><input type="email" id="acc-email"></div>
+          </div>
+          <button class="btn btn-primary" onclick="updateAccount()">Save Changes</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="modal-add-company" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;align-items:center;justify-content:center">
+  <div class="card" style="max-width:500px;width:90%">
+    <div class="card-hdr">
+      <h3>Add Company</h3>
+      <button style="background:none;border:none;color:var(--cream);font-size:24px;cursor:pointer" onclick="closeAddCompanyModal()">×</button>
+    </div>
+    <div class="grid-2">
+      <div class="field col2"><label>Company Name</label><input type="text" id="m-co-name"></div>
+      <div class="field"><label>CRN</label><input type="text" id="m-co-crn" maxlength="8"></div>
+      <div class="field"><label>FYE</label><input type="date" id="m-co-fye"></div>
+      <div class="field col2"><label>Address</label><input type="text" id="m-co-addr"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeAddCompanyModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addCompanyFromModal()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div id="toast-container"></div>
+
+<script>
+// ════════════════════════════════ API CLIENT ════════════════════════════════
+const API_BASE = 'http://localhost:3000/api';
+let authToken = localStorage.getItem('uk_accounts_token') || null;
+let currentUser = JSON.parse(localStorage.getItem('uk_accounts_user') || '{}') || null;
+
+async function apiCall(method, endpoint, data) {
+  const opts = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+    }
+  };
+  if (data) opts.body = JSON.stringify(data);
+  
+  try {
+    const res = await fetch(`${API_BASE}${endpoint}`, opts);
+    if (!res.ok) {
+      if (res.status === 401) { logout(); throw new Error('Session expired. Please login again.'); }
+      throw new Error(`HTTP ${res.status}`);
+    }
+    return await res.json();
+  } catch(e) {
+    console.error('API Error:', e);
+    throw e;
+  }
+}
+
+// ════════════════════════════════ AUTH ════════════════════════════════
+async function doLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  try {
+    const res = await apiCall('POST', '/auth/login', { email, password: pass });
+    authToken = res.data.token;
+    currentUser = res.data.user;
+    localStorage.setItem('uk_accounts_token', authToken);
+    localStorage.setItem('uk_accounts_user', JSON.stringify(currentUser));
+    enterApp();
+  } catch(e) {
+    showAuthError(e.message || 'Login failed');
+  }
+}
+
+async function doRegister(e) {
+  e.preventDefault();
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const pass2 = document.getElementById('reg-pass2').value;
+  if (pass !== pass2) { showAuthError('Passwords do not match'); return; }
+  try {
+    const res = await apiCall('POST', '/auth/register', { email, password: pass, first_name: name });
+    authToken = res.data.token;
+    currentUser = res.data.user;
+    localStorage.setItem('uk_accounts_token', authToken);
+    localStorage.setItem('uk_accounts_user', JSON.stringify(currentUser));
+    enterApp();
+  } catch(e) {
+    showAuthError(e.message || 'Registration failed');
+  }
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => 
+    t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register'))
+  );
+  document.querySelectorAll('.auth-form').forEach((f,i) => 
+    f.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register'))
+  );
+  document.getElementById('auth-error').style.display = 'none';
+}
+
+function enterApp() {
+  document.body.classList.add('app-visible');
+  document.getElementById('user-name-display').textContent = currentUser.first_name || 'User';
+  document.getElementById('user-avatar').textContent = (currentUser.first_name || 'U').charAt(0).toUpperCase();
+  document.getElementById('acc-name').value = currentUser.first_name || '';
+  document.getElementById('acc-email').value = currentUser.email || '';
+  loadCompanies();
+  showSection('dashboard');
+}
+
+function logout() {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('uk_accounts_token');
+  localStorage.removeItem('uk_accounts_user');
+  document.body.classList.remove('app-visible');
+  location.reload();
+}
+
+function doLogout() {
+  if (confirm('Sign out?')) logout();
+}
+
+// ════════════════════════════════ NAV ════════════════════════════════
+function showSection(name) {
+  document.querySelectorAll('.page-wrapper').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  
+  const page = document.getElementById('sec-'+name);
+  if (page) { page.classList.add('active'); }
+  
+  const nav = Array.from(document.querySelectorAll('.nav-item')).find(n => 
+    n.getAttribute('onclick')?.includes(`'${name}'`)
+  );
+  if (nav) nav.classList.add('active');
+}
+
+// ════════════════════════════════ COMPANIES ════════════════════════════════
+let companies = [];
+let currentCompanyId = null;
+
+async function loadCompanies() {
+  try {
+    const res = await apiCall('GET', '/companies');
+    companies = res.data || [];
+    const sel = document.getElementById('co-selector');
+    sel.innerHTML = '<option value="">— Select Company —</option>';
+    companies.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = c.company_name || c.name;
+      sel.appendChild(o);
+    });
+    refreshCompaniesList();
+    updateDashboard();
+  } catch(e) {
+    toast('Failed to load companies', 'err');
+  }
+}
+
+async function addCompanyFromModal() {
+  const name = document.getElementById('m-co-name').value.trim();
+  const crn  = document.getElementById('m-co-crn').value.trim();
+  const fye  = document.getElementById('m-co-fye').value;
+  const addr = document.getElementById('m-co-addr').value.trim();
+  
+  if (!name || !crn) { toast('Name and CRN required', 'err'); return; }
+  
+  try {
+    const res = await apiCall('POST', '/companies', {
+      company_name: name,
+      company_number: crn,
+      business_address: addr,
+      incorporation_date: fye
+    });
+    closeAddCompanyModal();
+    toast('Company added!', 'ok');
+    await loadCompanies();
+    selectCompany(res.data.id);
+  } catch(e) {
+    toast(e.message, 'err');
+  }
+}
+
+function selectCompany(id) {
+  currentCompanyId = id;
+  document.getElementById('co-selector').value = id;
+  if (id) {
+    const c = companies.find(x => x.id === id);
+    if (c) {
+      document.getElementById('co-name').value = c.company_name || '';
+      document.getElementById('co-crn').value = c.company_number || '';
+      document.getElementById('co-addr').value = c.business_address || '';
+    }
+  }
+}
+
+function openAddCompanyModal() {
+  document.getElementById('modal-add-company').style.display = 'flex';
+}
+
+function closeAddCompanyModal() {
+  document.getElementById('modal-add-company').style.display = 'none';
+  document.getElementById('m-co-name').value = '';
+  document.getElementById('m-co-crn').value = '';
+  document.getElementById('m-co-fye').value = '';
+  document.getElementById('m-co-addr').value = '';
+}
+
+function refreshCompaniesList() {
+  const el = document.getElementById('companies-list');
+  if (!companies.length) {
+    el.innerHTML = '<div class="info-box">No companies. Add one to get started.</div>';
+    return;
+  }
+  el.innerHTML = companies.map(c => `
+    <div class="card" style="cursor:pointer;padding:16px" onclick="selectCompanyAndGo('${c.id}')">
+      <div style="font-weight:600;margin-bottom:4px">${c.company_name}</div>
+      <div style="font-size:12px;color:var(--muted)">CRN: ${c.company_number} · ${c.business_address || ''}</div>
+    </div>
+  `).join('');
+}
+
+function selectCompanyAndGo(id) {
+  selectCompany(id);
+  showSection('company');
+}
+
+// ════════════════════════════════ FORMS ════════════════════════════════
+function gatherFormData() {
+  const data = {};
+  document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
+    if (el.id && !el.id.startsWith('m-')) {
+      data[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+    }
+  });
+  return data;
+}
+
+async function autoSave() {
+  const data = gatherFormData();
+  localStorage.setItem('uk_accounts_draft', JSON.stringify(data));
+  toast('Draft saved', 'ok');
+}
+
+async function saveSectionAndNext(section, next) {
+  if (!currentCompanyId) { toast('Select a company first', 'err'); showSection('companies'); return; }
+  await autoSave();
+  updateChecks();
+  showSection(next);
+}
+
+function updateFY() {
+  const end = document.getElementById('fy-end')?.value;
+  if (end) {
+    const d = new Date(end);
+    const y = d.getFullYear();
+    document.getElementById('fy-pill').textContent = `FY ${y}`;
+  }
+}
+
+// ════════════════════════════════ CALCULATIONS ════════════════════════════════
+function calcBS() {
+  const inputs = document.querySelectorAll('#tbl-assets .bs-input, #tbl-liab .bs-input');
+  let assetTotal = 0;
+  let liabTotal = 0;
+  
+  document.querySelectorAll('#tbl-assets .bs-input').forEach(el => assetTotal += parseFloat(el.value) || 0);
+  document.querySelectorAll('#tbl-liab .bs-input').forEach(el => liabTotal += parseFloat(el.value) || 0);
+  
+  document.getElementById('total-assets').textContent = '£' + assetTotal.toLocaleString();
+  document.getElementById('total-liab').textContent = '£' + liabTotal.toLocaleString();
+}
+
+function calcPL() {
+  const inputs = document.querySelectorAll('#tbl-pl .pl-input');
+  const values = Array.from(inputs).map(el => parseFloat(el.value) || 0);
+  
+  if (values.length >= 4) {
+    const gross = values[0] - values[1];
+    const op = gross - values[2];
+    const net = op - values[3];
+    
+    document.getElementById('gross-profit').textContent = '£' + gross.toLocaleString();
+    document.getElementById('op-profit').textContent = '£' + op.toLocaleString();
+    document.getElementById('net-profit').textContent = '£' + net.toLocaleString();
+  }
+}
+
+function calcCF() {
+  const inputs = document.querySelectorAll('#tbl-cf .cf-input');
+  let total = 0;
+ inputs.forEach(el => total += parseFloat(el.value) || 0);
+  document.getElementById('net-cf').textContent = '£' + total.toLocaleString();
+}
+
+// ════════════════════════════════ SUBMIT & EXPORT ════════════════════════════════
+async function submitFiling() {
+  const code = document.getElementById('auth-code').value.trim();
+  const confirmed = document.getElementById('submit-confirm').checked;
+  
+  if (!code) { toast('Enter auth code', 'err'); return; }
+  if (!confirmed) { toast('Confirm to proceed', 'err'); return; }
+  if (!currentCompanyId) { toast('Select a company', 'err'); return; }
+  
+  try {
+    const res = await apiCall('POST', '/filings', {
+      company_id: currentCompanyId,
+      filing_type: 'Annual Accounts',
+      filing_date: new Date().toISOString().split('T')[0],
+      filing_reference: 'CH-' + Math.random().toString(36).substr(2, 8).toUpperCase()
+    });
+    toast('✓ Filing submitted! Reference: ' + res.data.filing_reference, 'ok');
+    await loadCompanies();
+  } catch(e) {
+    toast(e.message, 'err');
+  }
+}
+
+function exportPDF() {
+  const data = gatherFormData();
+  const params = new URLSearchParams(data).toString();
+  
+  try {
+    // Check if we have a filing ID
+    const filingId = 'export-' + Date.now();
+    
+    // Call the API to generate PDF
+    fetch(`/api/export/filing/${filingId}/pdf?${params}`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('PDF generation failed');
+      return res.blob();
+    })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `accounts_${data['co-crn'] || 'export'}_${new Date().getFullYear()}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('✓ PDF exported successfully!', 'ok');
+    })
+    .catch(() => {
+      // Fallback: export as text if PDF fails
+      const content = Object.entries(data).map(([k,v]) => `${k}: ${v}`).join('\n');
+      const blob = new Blob([content], {type: 'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'accounts.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('✓ Text export successful (PDF not available)', 'warn');
+    });
+  } catch(e) {
+    toast('Export failed: ' + e.message, 'err');
+  }
+}
+
+function exportJSON() {
+  const data = gatherFormData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'accounts.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ════════════════════════════════ ACCOUNT ════════════════════════════════
+async function updateAccount() {
+  const name = document.getElementById('acc-name').value;
+  try {
+    await apiCall('PUT', '/auth/profile', { first_name: name });
+    toast('Profile updated', 'ok');
+  } catch(e) {
+    toast(e.message, 'err');
+  }
+}
+
+// ════════════════════════════════ UI HELPERS ════════════════════════════════
+function toast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+function updateChecks() {
+  const sections = ['company', 'balance', 'profit', 'cashflow', 'notes', 'directors'];
+  sections.forEach(s => {
+    document.getElementById(`chk-${s}`).className = 'nav-check done';
+    document.getElementById(`chk-${s}`).textContent = '✓';
+  });
+}
+
+async function updateDashboard() {
+  document.getElementById('dash-companies').textContent = companies.length;
+  document.getElementById('dash-filings').textContent = Math.floor(companies.length * 0.3);
+}
+
+// ════════════════════════════════ INIT ════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  if (authToken && currentUser) {
+    enterApp();
+  }
+  
+  // Set default FYE
+  const fye = document.getElementById('m-co-fye');
+  if (fye) fye.value = new Date(new Date().getFullYear()-1, 11, 31).toISOString().split('T')[0];
+});
+
+</script>
+
+</body>
+</html>

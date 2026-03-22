@@ -1,0 +1,174 @@
+### ====== HEALTH CHECK ======
+GET http://localhost:3000/health
+
+### ====== AUTHENTICATION ======
+
+### Register a new user
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123",
+  "first_name": "John",
+  "last_name": "Doe"
+}
+
+### Login (get JWT token)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+### Get current user (requires token)
+GET http://localhost:3000/api/auth/me
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### ====== COMPANIES ======
+
+### Get all companies
+GET http://localhost:3000/api/companies
+
+### Create a company (requires auth)
+POST http://localhost:3000/api/companies
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "company_number": "12345678",
+  "company_name": "Acme Corporation Ltd",
+  "business_address": "123 Business Street, London, UK",
+  "registered_office": "123 Business Street, London, UK",
+  "industry_classification": "Manufacturing",
+  "incorporation_date": "2020-01-15"
+}
+
+### Get company by ID
+GET http://localhost:3000/api/companies/1
+
+### Update company (requires auth)
+PUT http://localhost:3000/api/companies/1
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "company_name": "Acme Corporation plc",
+  "status": "active"
+}
+
+### Delete company (requires auth)
+DELETE http://localhost:3000/api/companies/1
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### Get company financial statements
+GET http://localhost:3000/api/companies/1/statements
+
+### ====== FINANCIAL STATEMENTS ======
+
+### Get all statements for a company
+GET http://localhost:3000/api/statements?companyId=1
+
+### Create financial statement (requires auth)
+POST http://localhost:3000/api/statements
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "company_id": 1,
+  "statement_type": "Income Statement",
+  "period_start_date": "2025-01-01",
+  "period_end_date": "2025-12-31",
+  "revenue": 5000000.00,
+  "cost_of_goods_sold": 2000000.00,
+  "gross_profit": 3000000.00,
+  "operating_expenses": 1000000.00,
+  "operating_profit": 2000000.00,
+  "total_assets": 10000000.00,
+  "total_liabilities": 4000000.00,
+  "shareholders_equity": 6000000.00
+}
+
+### Get statement by ID
+GET http://localhost:3000/api/statements/1
+
+### Update statement (requires auth)
+PUT http://localhost:3000/api/statements/1
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "revenue": 5500000.00,
+  "filed": true
+}
+
+### Delete statement (requires auth)
+DELETE http://localhost:3000/api/statements/1
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### ====== DOCUMENTS ======
+
+### Get documents for company
+GET http://localhost:3000/api/documents?companyId=1
+
+### Upload document (requires auth)
+POST http://localhost:3000/api/documents
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "company_id": 1,
+  "document_type": "Annual Report",
+  "file_name": "annual_report_2025.pdf",
+  "file_path": "/uploads/annual_report_2025.pdf",
+  "file_size": 2048576,
+  "mime_type": "application/pdf",
+  "uploaded_by": 1
+}
+
+### Get document by ID
+GET http://localhost:3000/api/documents/1
+
+### Delete document (requires auth)
+DELETE http://localhost:3000/api/documents/1
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### ====== FILINGS ======
+
+### Get filings for company
+GET http://localhost:3000/api/filings?companyId=1
+
+### Create filing (requires auth)
+POST http://localhost:3000/api/filings
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "company_id": 1,
+  "filing_type": "Annual Accounts",
+  "filing_date": "2026-03-22",
+  "filing_reference": "2026/123456",
+  "submitted_by": 1,
+  "filing_data": {
+    "accounts_type": "Full",
+    "accounting_reference_date": "2025-12-31"
+  }
+}
+
+### Get filing by ID
+GET http://localhost:3000/api/filings/1
+
+### Update filing (requires auth)
+PUT http://localhost:3000/api/filings/1
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "status": "submitted"
+}
+
+### Delete filing (requires auth)
+DELETE http://localhost:3000/api/filings/1
+Authorization: Bearer YOUR_TOKEN_HERE
