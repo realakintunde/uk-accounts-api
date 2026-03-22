@@ -129,7 +129,6 @@ body{
 
 /* Full page layout  */
 body.app-visible #auth-screen{display:none}
-body.app-loading{loading:true}
 
 #app{display:none}
 body.app-visible #app{display:grid;grid-template-rows:auto 1fr;min-height:100vh}
@@ -880,7 +879,7 @@ td input:focus{outline:none;background:rgba(201,168,76,0.1);padding:5px}
 
 <script>
 // ════════════════════════════════ API CLIENT ════════════════════════════════
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = window.location.origin + '/api';
 let authToken = localStorage.getItem('uk_accounts_token') || null;
 let currentUser = JSON.parse(localStorage.getItem('uk_accounts_user') || '{}') || null;
 
