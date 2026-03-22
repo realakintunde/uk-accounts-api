@@ -2,7 +2,7 @@
 
 **Status:** Ready to execute  
 **Date Started:** March 22, 2026  
-**Goal:** Transform AccountsHub from hobby project → professional business generating revenue
+**Goal:** Transform Ledger Plus from hobby project → professional business generating revenue
 
 ---
 
@@ -41,11 +41,11 @@
 **Action Items (In Order):**
 - [ ] Register Ltd company (£12, 10 mins)
   - Go to: gov.uk/register-a-company-online
-  - Name: **AccountsHub Ltd** (recommended)
+  - Name: **Ledger Plus Ltd** (recommended)
   
 - [ ] Register domains (£10/year)
-  - accountshub.co.uk
-  - accountshub.com
+  - ledgerplus.co.uk
+  - ledgerplus.com
   - Use Namecheap
 
 - [ ] Open business bank account
@@ -62,16 +62,16 @@
 
 - [ ] Set up professional email (£60/year)
   - Google Workspace
-  - support@accountshub.co.uk
-  - hello@accountshub.co.uk
+  - support@ledgerplus.co.uk
+  - hello@ledgerplus.co.uk
 
 - [ ] Create social media profiles (free)
   - LinkedIn company page
-  - Twitter @accountshubuk
+  - Twitter @ledgerplusuk
   - Substack newsletter
 
 **Expected Outcome:**
-- Official company: AccountsHub Ltd
+- Official company: Ledger Plus Ltd
 - Professional branding (logo, colors, fonts)
 - Professional email addresses
 - Legal protection (T&Cs, Privacy Policy)
@@ -102,7 +102,7 @@
   - FAQ: 5 common questions
 
 - [ ] Connect domain
-  - accountshub.co.uk → Webflow
+  - ledgerplus.co.uk → Webflow
 
 - [ ] Add blog (3-5 posts)
   - "How to File UK Accounts in 30 Minutes"
@@ -119,7 +119,7 @@
   - Track visitor behavior
 
 - [ ] Optimize for SEO
-  - Title: "AccountsHub - Fast UK Accounts Filing Software"
+  - Title: "Ledger Plus - Fast UK Accounts Filing Software"
   - Meta description with keywords
   - H1/H2/H3 hierarchy
   - Internal links

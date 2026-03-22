@@ -32,8 +32,8 @@ This is the MOST IMPORTANT step. Without this, everything else (marketing websit
 **Stripe asks:**
 
 1. **Business details**
-   - Business name: AccountsHub Ltd
-   - Website: accountshub.co.uk
+   - Business name: Ledger Plus Ltd
+   - Website: ledgerplus.co.uk
    - Business type: Software/SaaS
    - Country: UK
    - Address: Your business address

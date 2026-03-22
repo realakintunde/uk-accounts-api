@@ -3,7 +3,7 @@
 ## Overview
 
 Your current website is the live app. We need a **separate marketing website** to:
-- ✅ Explain what AccountsHub does
+- ✅ Explain what Ledger Plus does
 - ✅ Drive traffic (SEO)
 - ✅ Convert visitors to users
 - ✅ Build credibility

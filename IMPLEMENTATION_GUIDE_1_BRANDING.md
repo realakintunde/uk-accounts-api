@@ -20,9 +20,9 @@ A **Limited Company** (Ltd) - the most professional structure for SaaS businesse
 
 ## PART A: CHOOSE COMPANY NAME
 
-### Recommended Name: **AccountsHub**
+### Recommended Name: **Ledger Plus**
 
-**Why AccountsHub:**
+**Why Ledger Plus:**
 - ✅ Short (9 letters)
 - ✅ Memorable
 - ✅ Domain available (.co.uk and .com)
@@ -33,9 +33,9 @@ A **Limited Company** (Ltd) - the most professional structure for SaaS businesse
 
 ### Domain Check
 ```
-accountshub.co.uk    ← Recommended (UK-focused)
-accountshub.com      ← Register this too
-accountshub.net      ← Optional backup
+ledgerplus.co.uk    ← Recommended (UK-focused)
+ledgerplus.com      ← Register this too
+ledgerplus.net      ← Optional backup
 ```
 
 **Where to register domain:**
@@ -58,7 +58,7 @@ accountshub.net      ← Optional backup
 **Go to:** https://www.gov.uk/register-a-company-online
 
 **Information you'll need:**
-1. **Company name:** AccountsHub Ltd (or your chosen name)
+1. **Company name:** Ledger Plus Ltd (or your chosen name)
 2. **Registered office address:** Your home address or business address
    - Example: 123 Main Street, London, SW1A 1AA
 3. **Directors:** Your full name and address
@@ -95,7 +95,7 @@ accountshub.net      ← Optional backup
 
 2. **Company Number** (example: 12345678)
    - Goes on everything (website, emails, contracts)
-   - Use format: "AccountsHub Ltd, Company Number: 12345678"
+   - Use format: "Ledger Plus Ltd, Company Number: 12345678"
 
 3. **Registered Office Address**
    - Legal address for official documents
@@ -191,7 +191,7 @@ accountshub.net      ← Optional backup
 
 ## STEP 5: Trademark Protection (Optional)
 
-### Should You Trademark "AccountsHub"?
+### Should You Trademark "Ledger Plus"?
 
 **Pros:**
 - ✅ Protects your brand legally
@@ -227,7 +227,7 @@ accountshub.net      ← Optional backup
 
 **Brief to give designer:**
 ```
-Company: AccountsHub
+Company: Ledger Plus
 Tagline: "Professional accounts filing for small businesses"
 Style: Modern, professional, tech-forward
 Colors: Navy (#0b1829), Gold (#c9a84c), Cream (#f2ede3)
@@ -311,7 +311,7 @@ Once you have a logo, create a **Brand Book** (2-3 pages):
    - Professional yet approachable
    - Clear and concise
    - Helpful, not arrogant
-   - Example: "AccountsHub makes accounts filing simple"
+   - Example: "Ledger Plus makes accounts filing simple"
 
 5. **Visual Style**
    - Examples of good usage
@@ -343,7 +343,7 @@ Once you have a logo, create a **Brand Book** (2-3 pages):
 ### Set Up Google Workspace
 
 **Why Google Workspace?**
-- ✅ Professional email: support@accountshub.co.uk
+- ✅ Professional email: support@ledgerplus.co.uk
 - ✅ Gmail quality with custom domain
 - ✅ 30GB storage
 - ✅ Calendar, Drive, Docs included
@@ -355,16 +355,16 @@ Once you have a logo, create a **Brand Book** (2-3 pages):
 
 1. Go to: https://workspace.google.com
 2. Click "Start free trial"
-3. Enter domain: accountshub.co.uk
+3. Enter domain: ledgerplus.co.uk
 4. Verify you own domain (via DNS records)
 5. Create admin account
 6. Add other users as needed
 
 **Create these emails:**
-- support@accountshub.co.uk (support)
-- hello@accountshub.co.uk (sales inquiries)
-- founders@accountshub.co.uk (founders only)
-- noreply@accountshub.co.uk (automated emails)
+- support@ledgerplus.co.uk (support)
+- hello@ledgerplus.co.uk (sales inquiries)
+- founders@ledgerplus.co.uk (founders only)
+- noreply@ledgerplus.co.uk (automated emails)
 
 **Professional email signature template:**
 
@@ -373,13 +373,13 @@ Once you have a logo, create a **Brand Book** (2-3 pages):
 Best regards,
 
 [Your Name]
-Co-Founder, AccountsHub
-support@accountshub.co.uk
-accountshub.co.uk
+Co-Founder, Ledger Plus
+support@ledgerplus.co.uk
+ledgerplus.co.uk
 
 📞 [Phone if comfortable sharing]
 💼 LinkedIn profile link
-🐦 Twitter @accountshubuk
+🐦 Twitter @ledgerplusuk
 ```
 
 ---
@@ -405,7 +405,7 @@ accountshub.co.uk
 4. Start engaging (3-4 posts/week)
 
 **Twitter Setup:**
-1. Create business account: @accountshubuk
+1. Create business account: @ledgerplusuk
 2. Add logo, description (160 chars)
 3. Link to website
 4. Follow accountants, founders, fintech people

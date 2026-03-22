@@ -21,13 +21,13 @@ Your system is **production-ready**, **feature-rich**, and **market-ready**. Her
 #### A. Professional Company Name & Branding
 **Current:** UK Accounts API (Technical)  
 **Suggested Options:**
-- **"AccountsHub"** - Simple, memorable, professional
+- **"Ledger Plus"** - Simple, memorable, professional
 - **"QuickFile Pro"** - Positioning against competitors
 - **"AccountsAutomated"** - Feature-focused
 - **"ComplianceFlow"** - Regulatory angle
 - **"FilePro UK"** - Direct, specific to UK market
 
-**Recommended:** **"AccountsHub"** or **"ComplianceFlow"**
+**Recommended:** **"Ledger Plus"** or **"ComplianceFlow"**
 - Short, professional, memorable
 - .com domain available and affordable
 - Clear value proposition
@@ -238,7 +238,7 @@ Your main competitors:
 
 ### Your Positioning Statement
 ```
-"AccountsHub: Professional accounts filing for small 
+"Ledger Plus: Professional accounts filing for small 
 businesses that want simplicity, not complexity. 
 Modern, fast, and designed for UK law."
 ```
@@ -324,7 +324,7 @@ businesses. Modern, affordable, and built for compliance."
 
 **For Freelancers:**
 > "Stop paying accountants £2,000/year. File your UK 
-> accounts in 30 minutes with AccountsHub. Simple, modern, 
+> accounts in 30 minutes with Ledger Plus. Simple, modern, 
 > built for you."
 
 **For Small Businesses:**
@@ -575,7 +575,7 @@ MONTH 11-12: SCALE + RETENTION
 - [ ] Register trademark (optional but recommended)
 
 ### Week 2: Branding
-- [ ] Decide company name (I recommend: **AccountsHub**)
+- [ ] Decide company name (I recommend: **Ledger Plus**)
 - [ ] Get logo designed (Fiverr: £200-500)
 - [ ] Choose color palette (already have it: navy + gold 👍)
 - [ ] Register brand on social media
