@@ -32,6 +32,8 @@ app.use('/api/documents', require('./routes/documents'));
 app.use('/api/filings', require('./routes/filings'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/export', require('./routes/export'));
+app.use('/api/management', require('./routes/management'));
+app.use('/api/financial', require('./routes/financial'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
