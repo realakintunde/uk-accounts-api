@@ -3,29 +3,35 @@ const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res, next) => {
   try {
+    console.log('[AUTH] Registration request received:', { email: req.body.email });
     const { email, password, first_name, last_name } = req.body;
 
     if (!email || !password) {
+      console.log('[AUTH] Missing email or password');
       return res.status(400).json({
         success: false,
         error: 'Email and password are required',
       });
     }
 
+    console.log('[AUTH] Checking if user exists:', email);
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
+      console.log('[AUTH] User already exists:', email);
       return res.status(409).json({
         success: false,
         error: 'User with this email already exists',
       });
     }
 
+    console.log('[AUTH] Creating new user:', email);
     const newUser = await User.create({
       email,
       password,
       first_name,
       last_name,
     });
+    console.log('[AUTH] User created successfully:', { id: newUser.id, email: newUser.email });
 
     // Generate JWT token for immediate login after registration
     const token = jwt.sign(
@@ -34,6 +40,7 @@ exports.register = async (req, res, next) => {
       { expiresIn: process.env.JWT_EXPIRY || '24h' }
     );
 
+    console.log('[AUTH] Registration successful:', email);
     res.status(201).json({
       success: true,
       data: {
@@ -49,43 +56,52 @@ exports.register = async (req, res, next) => {
       message: 'User registered successfully',
     });
   } catch (error) {
+    console.error('[AUTH] Registration error:', error.message, error.stack);
     next(error);
   }
 };
 
 exports.login = async (req, res, next) => {
   try {
+    console.log('[AUTH] Login request received:', { email: req.body.email });
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.log('[AUTH] Missing email or password for login');
       return res.status(400).json({
         success: false,
         error: 'Email and password are required',
       });
     }
 
+    console.log('[AUTH] Finding user:', email);
     const user = await User.findByEmail(email);
     if (!user) {
+      console.log('[AUTH] User not found:', email);
       return res.status(401).json({
         success: false,
         error: 'Invalid credentials',
       });
     }
 
+    console.log('[AUTH] Verifying password for user:', email);
     const isPasswordValid = await User.verifyPassword(user, password);
     if (!isPasswordValid) {
+      console.log('[AUTH] Invalid password for user:', email);
       return res.status(401).json({
         success: false,
         error: 'Invalid credentials',
       });
     }
 
+    console.log('[AUTH] Password verified, generating token for:', email);
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'secret',
       { expiresIn: process.env.JWT_EXPIRE || '24h' }
     );
 
+    console.log('[AUTH] Login successful:', email);
     res.json({
       success: true,
       data: {

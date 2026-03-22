@@ -45,8 +45,18 @@ app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`, {
+    body: req.body,
+    origin: req.get('origin')
+  });
+  next();
+});
+
 // Test endpoint to diagnose connectivity
 app.get('/api/test', (req, res) => {
+  console.log('[SERVER] Test endpoint called');
   res.json({ 
     success: true, 
     message: 'API is responding',

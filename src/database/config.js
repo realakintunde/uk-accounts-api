@@ -16,6 +16,12 @@ pool.on('error', (err) => {
 
 const setupDatabase = async () => {
   try {
+    console.log('[DATABASE] Attempting connection with config:', {
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT || 5432,
+      database: process.env.DB_NAME || 'uk_accounts_db',
+      user: process.env.DB_USER || 'postgres'
+    });
     const connection = await pool.connect();
     console.log('✓ Database connected successfully');
     connection.release();
