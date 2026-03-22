@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - UK Annual Accounts Filing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0b1829;
+      --navy-mid: #112236;
+      --navy-light: #1a2f4a;
+      --gold: #c9a84c;
+      --gold-light: #e2c97e;
+      --cream: #f2ede3;
+      --cream-dim: rgba(242,237,227,0.65);
+      --green: #1c7a4a;
+      --red: #c74e4e;
+      --muted: #7a8fa8;
+      --font-d: 'Playfair Display', Georgia, serif;
+      --font-b: 'IBM Plex Sans', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--navy);
+      color: var(--cream);
+      font-family: var(--font-b);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 250px;
+      height: 100vh;
+      background: var(--navy-mid);
+      border-right: 2px solid rgba(201, 168, 76, 0.2);
+      overflow-y: auto;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .sidebar h2 {
+      font-family: var(--font-d);
+      font-size: 20px;
+      margin-bottom: 30px;
+      color: var(--gold);
+    }
+
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .sidebar-menu li {
+      margin-bottom: 15px;
+    }
+
+    .sidebar-menu a {
+      display: block;
+      padding: 10px 15px;
+      color: var(--cream-dim);
+      text-decoration: none;
+      border-radius: 4px;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .sidebar-menu a:hover,
+    .sidebar-menu a.active {
+      background: rgba(201, 168, 76, 0.15);
+      color: var(--gold);
+      padding-left: 20px;
+    }
+
+    /* MAIN CONTENT */
+    .main {
+      margin-left: 250px;
+      padding: 30px;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(201, 168, 76, 0.2);
+    }
+
+    .header h1 {
+      font-family: var(--font-d);
+      font-size: 32px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .user-info {
+      text-align: right;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .user-role {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: 1px solid var(--gold);
+      background: transparent;
+      color: var(--gold);
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background: rgba(201, 168, 76, 0.15);
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-light);
+    }
+
+    /* GRID */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: var(--navy-light);
+      border: 1px solid rgba(201, 168, 76, 0.15);
+      border-radius: 4px;
+      padding: 25px;
+      transition: all 0.3s;
+    }
+
+    .card:hover {
+      border-color: rgba(201, 168, 76, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-family: var(--font-d);
+      font-size: 18px;
+      color: var(--gold);
+    }
+
+    .card-icon {
+      font-size: 28px;
+    }
+
+    .card-stat {
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--cream);
+      margin-bottom: 10px;
+    }
+
+    .card-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-action {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(201, 168, 76, 0.1);
+    }
+
+    .card-action a {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    /* TABLES */
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      font-family: var(--font-d);
+      font-size: 24px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid rgba(201, 168, 76, 0.2);
+      color: var(--gold);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--navy-light);
+      border: 1px solid rgba(201, 168, 76, 0.15);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .table thead {
+      background: rgba(201, 168, 76, 0.1);
+    }
+
+    .table th {
+      padding: 15px 20px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--gold);
+      border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+    }
+
+    .table td {
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+    }
+
+    .table tr:hover {
+      background: rgba(201, 168, 76, 0.05);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background: rgba(28, 122, 74, 0.3);
+      color: rgb(100, 220, 140);
+    }
+
+    .badge-pending {
+      background: rgba(201, 168, 76, 0.3);
+      color: var(--gold-light);
+    }
+
+    .badge-approved {
+      background: rgba(28, 122, 74, 0.3);
+      color: rgb(100, 220, 140);
+    }
+
+    .badge-rejected {
+      background: rgba(199, 78, 78, 0.3);
+      color: rgb(255, 150, 150);
+    }
+
+    /* FORMS */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--cream);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      color: var(--cream);
+      border-radius: 4px;
+      font-family: var(--font-b);
+      font-size: 14px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.2);
+    }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--navy-light);
+      border: 2px solid var(--gold);
+      border-radius: 4px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      font-family: var(--font-d);
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: var(--gold);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--gold);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    /* NOTIFICATIONS */
+    .notification {
+      background: var(--navy-light);
+      border-left: 4px solid var(--gold);
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .notification.unread {
+      background: rgba(201, 168, 76, 0.1);
+    }
+
+    .notification.success {
+      border-left-color: var(--green);
+    }
+
+    .notification.error {
+      border-left-color: var(--red);
+    }
+
+    .notification-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .notification-time {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 200px;
+      }
+
+      .main {
+        margin-left: 200px;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 2px solid rgba(201, 168, 76, 0.2);
+        padding: 15px;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 15px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table {
+        font-size: 12px;
+      }
+
+      .table th,
+      .table td {
+        padding: 10px 15px;
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .spinner {
+      border: 3px solid rgba(201, 168, 76, 0.2);
+      border-top: 3px solid var(--gold);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2>📊 Admin Panel</h2>
+    <ul class="sidebar-menu">
+      <li><a class="menu-link active" data-section="dashboard">Dashboard</a></li>
+      <li><a class="menu-link" data-section="team">👥 Team Members</a></li>
+      <li><a class="menu-link" data-section="budgets">💰 Budgets</a></li>
+      <li><a class="menu-link" data-section="bank">🏦 Bank Accounts</a></li>
+      <li><a class="menu-link" data-section="approvals">✅ Approvals</a></li>
+      <li><a class="menu-link" data-section="audit">📋 Audit Logs</a></li>
+      <li><a class="menu-link" data-section="notifications">🔔 Notifications</a></li>
+      <li><a class="menu-link" data-section="settings">⚙️ Settings</a></li>
+      <li><a href="app.html" style="color: var(--green);">← Back to App</a></li>
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <!-- HEADER -->
+    <div class="header">
+      <h1 id="page-title">Dashboard</h1>
+      <div class="header-actions">
+        <div class="user-info">
+          <div class="user-name" id="user-name">Loading...</div>
+          <div class="user-role">Administrator</div>
+        </div>
+        <button class="btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD SECTION -->
+    <section id="dashboard" class="content-section">
+      <div class="dashboard-grid">
+        <!-- Team Stats -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Team Members</div>
+              <div class="card-label">Active users in company</div>
+            </div>
+            <div class="card-icon">👥</div>
+          </div>
+          <div class="card-stat" id="team-count">0</div>
+          <div class="card-action">
+            <a href="#" onclick="switchSection('team')">Manage team →</a>
+          </div>
+        </div>
+
+        <!-- Budget Stats -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Annual Budget</div>
+              <div class="card-label">Current fiscal year</div>
+            </div>
+            <div class="card-icon">💰</div>
+          </div>
+          <div class="card-stat" id="budget-total">£0</div>
+          <div class="card-action">
+            <a href="#" onclick="switchSection('budgets')">View budgets →</a>
+          </div>
+        </div>
+
+        <!-- Bank Accounts -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Bank Balance</div>
+              <div class="card-label">Total across accounts</div>
+            </div>
+            <div class="card-icon">🏦</div>
+          </div>
+          <div class="card-stat" id="bank-balance">£0</div>
+          <div class="card-action">
+            <a href="#" onclick="switchSection('bank')">Reconcile →</a>
+          </div>
+        </div>
+
+        <!-- Pending Approvals -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Pending Approvals</div>
+              <div class="card-label">Awaiting review</div>
+            </div>
+            <div class="card-icon">✅</div>
+          </div>
+          <div class="card-stat" id="pending-approvals">0</div>
+          <div class="card-action">
+            <a href="#" onclick="switchSection('approvals')">Review →</a>
+          </div>
+        </div>
+
+        <!-- Unread Notifications -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Notifications</div>
+              <div class="card-label">Unread messages</div>
+            </div>
+            <div class="card-icon">🔔</div>
+          </div>
+          <div class="card-stat" id="unread-count">0</div>
+          <div class="card-action">
+            <a href="#" onclick="switchSection('notifications')">View all →</a>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Last Update</div>
+              <div class="card-label">Audit trail</div>
+            </div>
+            <div class="card-icon">📝</div>
+          </div>
+          <div class="card-stat" id="last-audit" style="font-size: 14px;">No activity</div>
+          <div class="card-action">
+            <a href="#" onclick="switchSection('audit')">View logs →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Notifications -->
+      <div class="section">
+        <h3 class="section-title">Recent Activity</h3>
+        <div id="recent-activity">
+          <p style="color: var(--muted); padding: 20px;">No recent activity</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAM SECTION -->
+    <section id="team" class="content-section hidden">
+      <div style="margin-bottom: 20px;">
+        <button class="btn btn-primary" onclick="openModal('add-member')">+ Add Team Member</button>
+      </div>
+      <div class="section">
+        <h3 class="section-title">Team Members</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody id="team-list">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--muted);">Loading team members...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- BUDGETS SECTION -->
+    <section id="budgets" class="content-section hidden">
+      <div style="margin-bottom: 20px;">
+        <button class="btn btn-primary" onclick="openModal('add-budget')">+ Create Budget</button>
+      </div>
+      <div class="section">
+        <h3 class="section-title">Budgets</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Budget Name</th>
+              <th>Fiscal Year</th>
+              <th>Total Budget</th>
+              <th>Spent</th>
+              <th>Variance</th>
+            </tr>
+          </thead>
+          <tbody id="budget-list">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--muted);">No budgets created yet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- BANK SECTION -->
+    <section id="bank" class="content-section hidden">
+      <div style="margin-bottom: 20px;">
+        <button class="btn btn-primary" onclick="openModal('add-bank')">+ Add Bank Account</button>
+      </div>
+      <div class="section">
+        <h3 class="section-title">Bank Accounts</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Account Name</th>
+              <th>Account Number</th>
+              <th>Balance</th>
+              <th>Currency</th>
+              <th>Last Reconciled</th>
+            </tr>
+          </thead>
+          <tbody id="bank-list">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--muted);">No bank accounts added yet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- APPROVALS SECTION -->
+    <section id="approvals" class="content-section hidden">
+      <div class="section">
+        <h3 class="section-title">Pending Approvals</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Requested By</th>
+              <th>Required Approvers</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="approval-list">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--muted);">No pending approvals</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- AUDIT LOGS SECTION -->
+    <section id="audit" class="content-section hidden">
+      <div class="section">
+        <h3 class="section-title">Audit Logs</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>User</th>
+              <th>Table</th>
+              <th>Timestamp</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="audit-list">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--muted);">No audit logs yet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- NOTIFICATIONS SECTION -->
+    <section id="notifications" class="content-section hidden">
+      <div class="section">
+        <h3 class="section-title">Your Notifications</h3>
+        <div id="notification-list">
+          <p style="color: var(--muted); padding: 20px;">No notifications</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS SECTION -->
+    <section id="settings" class="content-section hidden">
+      <div class="section">
+        <h3 class="section-title">Company Settings</h3>
+        <div class="card">
+          <form>
+            <div class="form-group">
+              <label>Tax Year End</label>
+              <select id="tax-year-end">
+                <option value="01-31">January 31</option>
+                <option value="03-31">March 31</option>
+                <option value="06-30">June 30</option>
+                <option value="12-31">December 31</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>VAT Rate (%)</label>
+              <input type="number" id="vat-rate" value="20" step="0.1">
+            </div>
+
+            <div class="form-group">
+              <label>Corporation Tax Rate (%)</label>
+              <input type="number" id="corp-tax-rate" value="19" step="0.1">
+            </div>
+
+            <div class="form-group">
+              <label>Payroll Tax Rate (%)</label>
+              <input type="number" id="payroll-tax-rate" value="8" step="0.1">
+            </div>
+
+            <button type="submit" class="btn btn-primary" onclick="saveTaxSettings(event)">Save Settings</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODALS -->
+  
+  <!-- Add Team Member Modal -->
+  <div class="modal" id="add-member">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>Add Team Member</span>
+        <button class="modal-close" onclick="closeModal('add-member')">×</button>
+      </div>
+      <form onsubmit="addTeamMember(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="member-email" required>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select id="member-role" required>
+            <option value="">Select a role</option>
+            <option value="admin">Administrator</option>
+            <option value="accountant">Accountant</option>
+            <option value="viewer">Viewer</option>
+            <option value="approver">Approver</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Add Member</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Budget Modal -->
+  <div class="modal" id="add-budget">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>Create Budget</span>
+        <button class="modal-close" onclick="closeModal('add-budget')">×</button>
+      </div>
+      <form onsubmit="addBudget(event)">
+        <div class="form-group">
+          <label>Budget Name</label>
+          <input type="text" id="budget-name" placeholder="e.g., 2026 Operating Budget" required>
+        </div>
+        <div class="form-group">
+          <label>Fiscal Year</label>
+          <input type="number" id="budget-year" placeholder="2026" required>
+        </div>
+        <div class="form-group">
+          <label>Total Budget (£)</label>
+          <input type="number" id="budget-total-amt" placeholder="500000" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Create Budget</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Bank Account Modal -->
+  <div class="modal" id="add-bank">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>Add Bank Account</span>
+        <button class="modal-close" onclick="closeModal('add-bank')">×</button>
+      </div>
+      <form onsubmit="addBankAccount(event)">
+        <div class="form-group">
+          <label>Account Name</label>
+          <input type="text" id="bank-name" placeholder="Main Operating Account" required>
+        </div>
+        <div class="form-group">
+          <label>Account Number</label>
+          <input type="text" id="bank-number" placeholder="12345678" required>
+        </div>
+        <div class="form-group">
+          <label>Sort Code</label>
+          <input type="text" id="bank-sort" placeholder="201530" required>
+        </div>
+        <div class="form-group">
+          <label>Bank Name</label>
+          <input type="text" id="bank-bankname" placeholder="Example Bank" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Add Account</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://uk-accounts-api.onrender.com/api';
+    let token = localStorage.getItem('token');
+    let currentUser = null;
+    let currentCompanyId = null;
+
+    // Check authentication
+    window.addEventListener('load', () => {
+      if (!token) {
+        window.location.href = 'app.html';
+        return;
+      }
+      loadDashboard();
+    });
+
+    async function loadDashboard() {
+      try {
+        // Get current user
+        const userRes = await fetch(`${API_URL}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        currentUser = await userRes.json();
+        document.getElementById('user-name').textContent = currentUser.email;
+
+        // Load dashboard stats
+        await loadStats();
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      }
+    }
+
+    async function loadStats() {
+      try {
+        // Load team members
+        const teamRes = await fetch(`${API_URL}/management/${currentCompanyId}/members`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const team = await teamRes.json();
+        document.getElementById('team-count').textContent = team.length;
+
+        // Load notifications
+        const notifRes = await fetch(`${API_URL}/management/notifications/unread/count`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const notifData = await notifRes.json();
+        document.getElementById('unread-count').textContent = notifData.unreadCount || 0;
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    function switchSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('.content-section').forEach(sec => {
+        sec.classList.add('hidden');
+      });
+
+      // Show selected section
+      document.getElementById(sectionId).classList.remove('hidden');
+
+      // Update sidebar menu
+      document.querySelectorAll('.menu-link').forEach(link => {
+        link.classList.remove('active');
+      });
+      document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+      // Update page title
+      const titles = {
+        dashboard: 'Dashboard',
+        team: 'Team Members',
+        budgets: 'Budgets',
+        bank: 'Bank Accounts',
+        approvals: 'Approvals',
+        audit: 'Audit Logs',
+        notifications: 'Notifications',
+        settings: 'Settings'
+      };
+      document.getElementById('page-title').textContent = titles[sectionId];
+
+      // Load section-specific data
+      if (sectionId === 'team') loadTeamMembers();
+      if (sectionId === 'budgets') loadBudgets();
+      if (sectionId === 'bank') loadBankAccounts();
+      if (sectionId === 'approvals') loadApprovals();
+      if (sectionId === 'audit') loadAuditLogs();
+      if (sectionId === 'notifications') loadNotifications();
+    }
+
+    // Sidebar menu click handler
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('menu-link')) {
+        e.preventDefault();
+        const section = e.target.dataset.section;
+        switchSection(section);
+      }
+    });
+
+    // Modal functions
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    // Form handlers
+    async function addTeamMember(e) {
+      e.preventDefault();
+      const email = document.getElementById('member-email').value;
+      const role = document.getElementById('member-role').value;
+
+      try {
+        const res = await fetch(`${API_URL}/management/${currentCompanyId}/members`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, roleId: role })
+        });
+
+        if (res.ok) {
+          alert('Team member added successfully!');
+          closeModal('add-member');
+          loadTeamMembers();
+        }
+      } catch (error) {
+        alert('Error adding team member: ' + error.message);
+      }
+    }
+
+    async function addBudget(e) {
+      e.preventDefault();
+      const name = document.getElementById('budget-name').value;
+      const year = document.getElementById('budget-year').value;
+      const total = document.getElementById('budget-total-amt').value;
+
+      try {
+        const res = await fetch(`${API_URL}/financial/${currentCompanyId}/budgets`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name, fiscalYear: parseInt(year), totalBudget: parseFloat(total) })
+        });
+
+        if (res.ok) {
+          alert('Budget created successfully!');
+          closeModal('add-budget');
+          loadBudgets();
+        }
+      } catch (error) {
+        alert('Error creating budget: ' + error.message);
+      }
+    }
+
+    async function addBankAccount(e) {
+      e.preventDefault();
+      const accountName = document.getElementById('bank-name').value;
+      const accountNumber = document.getElementById('bank-number').value;
+      const sortCode = document.getElementById('bank-sort').value;
+      const bankName = document.getElementById('bank-bankname').value;
+
+      try {
+        const res = await fetch(`${API_URL}/financial/${currentCompanyId}/bank-accounts`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ accountName, accountNumber, sortCode, bankName })
+        });
+
+        if (res.ok) {
+          alert('Bank account added successfully!');
+          closeModal('add-bank');
+          loadBankAccounts();
+        }
+      } catch (error) {
+        alert('Error adding bank account: ' + error.message);
+      }
+    }
+
+    // Data loading functions
+    async function loadTeamMembers() {
+      try {
+        const res = await fetch(`${API_URL}/management/${currentCompanyId}/members`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const members = await res.json();
+        const tbody = document.getElementById('team-list');
+        tbody.innerHTML = members.map(m => `
+          <tr>
+            <td>${m.name || 'N/A'}</td>
+            <td>${m.email}</td>
+            <td><span class="badge badge-success">${m.role}</span></td>
+            <td>${m.status}</td>
+            <td>${new Date(m.created_at).toLocaleDateString()}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading team members:', error);
+      }
+    }
+
+    async function loadBudgets() {
+      try {
+        const res = await fetch(`${API_URL}/financial/${currentCompanyId}/budgets`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const budgets = await res.json();
+        const tbody = document.getElementById('budget-list');
+        tbody.innerHTML = budgets.map(b => `
+          <tr>
+            <td>${b.name}</td>
+            <td>${b.fiscal_year}</td>
+            <td>£${parseFloat(b.total_budget).toLocaleString()}</td>
+            <td>£0</td>
+            <td>0%</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading budgets:', error);
+      }
+    }
+
+    async function loadBankAccounts() {
+      try {
+        const res = await fetch(`${API_URL}/financial/${currentCompanyId}/bank-accounts`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const accounts = await res.json();
+        const tbody = document.getElementById('bank-list');
+        tbody.innerHTML = accounts.map(a => `
+          <tr>
+            <td>${a.account_name}</td>
+            <td>${a.account_number}</td>
+            <td>£${parseFloat(a.current_balance || 0).toLocaleString()}</td>
+            <td>${a.currency_code || 'GBP'}</td>
+            <td>${a.last_reconciled ? new Date(a.last_reconciled).toLocaleDateString() : 'Never'}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading bank accounts:', error);
+      }
+    }
+
+    async function loadApprovals() {
+      try {
+        const res = await fetch(`${API_URL}/documents/approvals/pending`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const approvals = await res.json();
+        const tbody = document.getElementById('approval-list');
+        tbody.innerHTML = approvals.map(a => `
+          <tr>
+            <td>${a.description}</td>
+            <td>Admin</td>
+            <td>2</td>
+            <td><span class="badge badge-pending">Pending</span></td>
+            <td><button class="btn" onclick="reviewApproval('${a.id}')">Review</button></td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading approvals:', error);
+      }
+    }
+
+    async function loadAuditLogs() {
+      try {
+        const res = await fetch(`${API_URL}/management/${currentCompanyId}/audit-logs?limit=20`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const logs = await res.json();
+        const tbody = document.getElementById('audit-list');
+        tbody.innerHTML = logs.map(log => `
+          <tr>
+            <td>${log.action}</td>
+            <td>${log.user_email}</td>
+            <td>${log.table_name}</td>
+            <td>${new Date(log.created_at).toLocaleString()}</td>
+            <td><small>${log.action}</small></td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading audit logs:', error);
+      }
+    }
+
+    async function loadNotifications() {
+      try {
+        const res = await fetch(`${API_URL}/management/notifications?limit=50`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const notifications = await res.json();
+        const container = document.getElementById('notification-list');
+        container.innerHTML = notifications.map(n => `
+          <div class="notification ${n.is_read ? '' : 'unread'}">
+            <div>
+              <div class="notification-title">${n.title}</div>
+              <div>${n.message}</div>
+              <div class="notification-time">${new Date(n.created_at).toLocaleString()}</div>
+            </div>
+            <button class="btn" onclick="markAsRead('${n.id}')">✓</button>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+      }
+    }
+
+    async function markAsRead(notificationId) {
+      try {
+        await fetch(`${API_URL}/management/notifications/${notificationId}/read`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        loadNotifications();
+      } catch (error) {
+        console.error('Error marking as read:', error);
+      }
+    }
+
+    async function saveTaxSettings(e) {
+      e.preventDefault();
+      const taxYearEnd = document.getElementById('tax-year-end').value;
+      const vatRate = parseFloat(document.getElementById('vat-rate').value);
+      const corporationTaxRate = parseFloat(document.getElementById('corp-tax-rate').value);
+      const payrollTaxRate = parseFloat(document.getElementById('payroll-tax-rate').value);
+
+      try {
+        const res = await fetch(`${API_URL}/financial/${currentCompanyId}/tax-settings`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ taxYearEnd, vatRate, corporationTaxRate, payrollTaxRate })
+        });
+
+        if (res.ok) {
+          alert('Tax settings saved successfully!');
+        }
+      } catch (error) {
+        alert('Error saving tax settings: ' + error.message);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = 'app.html';
+    }
+  </script>
+</body>
+</html>
