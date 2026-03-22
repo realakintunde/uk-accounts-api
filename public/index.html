@@ -894,15 +894,17 @@ async function apiCall(method, endpoint, data) {
   if (data) opts.body = JSON.stringify(data);
   
   try {
+    console.log(`[API] ${method} ${API_BASE}${endpoint}`, data);
     const res = await fetch(`${API_BASE}${endpoint}`, opts);
     if (!res.ok) {
       if (res.status === 401) { logout(); throw new Error('Session expired. Please login again.'); }
-      throw new Error(`HTTP ${res.status}`);
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${res.status}`);
     }
     return await res.json();
   } catch(e) {
-    console.error('API Error:', e);
-    throw e;
+    console.error('API Error:', e.message || e);
+    throw new Error(e.message || 'Network error. Please check your connection.');
   }
 }
 
@@ -1268,6 +1270,12 @@ async function updateDashboard() {
 
 // ════════════════════════════════ INIT ════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  // Diagnostic: Test API connectivity
+  fetch(API_BASE.replace('/api', '/health'))
+    .then(r => r.json())
+    .then(d => console.log('[API] Connection OK:', d))
+    .catch(e => console.error('[API] Connection FAILED:', e.message));
+  
   if (authToken && currentUser) {
     enterApp();
   }
