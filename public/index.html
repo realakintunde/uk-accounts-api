@@ -8,7 +8,23 @@
   <meta http-equiv="Expires" content="0">
   <title>UK Annual Accounts — Companies House Filing System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script>
+    // FORCE CACHE BUSTING - Check version and reload if old
+    const CURRENT_VERSION = '2026-03-23-aggressive-fix';
+    const STORED_VERSION = localStorage.getItem('app_version');
+    console.log('[VERSION] Current:', CURRENT_VERSION, 'Stored:', STORED_VERSION);
+    
+    if (STORED_VERSION !== CURRENT_VERSION) {
+      console.log('[VERSION] Version mismatch! Clearing cache and reloading...');
+      localStorage.setItem('app_version', CURRENT_VERSION);
+      localStorage.removeItem('uk_accounts_token');
+      localStorage.removeItem('uk_accounts_user');
+      // Hard reload to bypass browser cache
+      if (window.location.reload) {
+        window.location.reload(true); // true = force bypass cache
+      }
+    }
+  </script>
   <style>
 /* CSS VARIABLES & RESET */
 :root {
@@ -882,7 +898,25 @@ td input:focus{outline:none;background:rgba(201,168,76,0.1);padding:5px}
 
 <script>
 // ════════════════════════════════ API CLIENT ════════════════════════════════
-const API_BASE = window.location.origin + '/api';
+const API_BASE = (() => {
+  // Force production URL - NO localhost fallback
+  if (typeof window !== 'undefined') {
+    const origin = window.location.origin;
+    console.log('[API_BASE] window.location.origin:', origin);
+    
+    // Ensure we never use localhost
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      console.error('[API_BASE] ERROR: Running on localhost! This should not happen in production!');
+      return 'http://uk-accounts-api.onrender.com/api';
+    }
+    
+    const base = origin + '/api';
+    console.log('[API_BASE] Final API_BASE:', base);
+    return base;
+  }
+  return '/api';
+})();
+
 let authToken = localStorage.getItem('uk_accounts_token') || null;
 let currentUser = JSON.parse(localStorage.getItem('uk_accounts_user') || '{}') || null;
 
@@ -907,7 +941,7 @@ async function apiCall(method, endpoint, data, retries = 3) {
   
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const fullUrl = `${API_BASE}${endpoint}`;
+      const fullUrl = `${API_BASE}${endpoint}?t=${Date.now()}`;
       console.log(`[API] Attempt ${attempt}/${retries}: ${method} ${fullUrl}`, data);
       const res = await fetch(fullUrl, opts);
       
@@ -1312,11 +1346,21 @@ async function updateDashboard() {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('[INIT] DOMContentLoaded fired');
   
+  // CRITICAL: Unregister any cached Service Workers that might be serving old code
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      for (let registration of registrations) {
+        console.log('[INIT] Unregistering Service Worker:', registration.scope);
+        registration.unregister();
+      }
+    });
+  }
+  
   // Diagnostic: Test API connectivity - check multiple endpoints
   console.log('[TEST] Testing API endpoints...');
   
   Promise.all([
-    fetch(`${API_BASE}/test`)
+    fetch(`${API_BASE}/test?t=${Date.now()}`, { method: 'GET' })
       .then(r => {
         console.log('[TEST] /api/test response status:', r.status);
         return r.json();
@@ -1324,7 +1368,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(d => console.log('[TEST] /api/test SUCCESS:', d))
       .catch(e => console.error('[TEST] /api/test FAILED:', e.message)),
     
-    fetch('/health')
+    fetch('/health?t=' + Date.now(), { method: 'GET' })
       .then(r => {
         console.log('[TEST] /health response status:', r.status);
         return r.json();
