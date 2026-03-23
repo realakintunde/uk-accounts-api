@@ -5,7 +5,7 @@ const {
   uploadDocument,
   deleteDocument,
 } = require('../controllers/documentController');
-const { authenticateToken, authMiddleware } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const DocumentVersion = require('../models/DocumentVersion');
 const ApprovalWorkflow = require('../models/ApprovalWorkflow');
 const AuditLog = require('../models/AuditLog');
@@ -22,7 +22,7 @@ router.delete('/:id', authenticateToken, deleteDocument);
 // DOCUMENT VERSIONING
 
 // Create document version
-router.post('/:documentId/versions', authMiddleware, async (req, res) => {
+router.post('/:documentId/versions', authenticateToken, async (req, res) => {
   try {
     const { content, changeSummary, companyId } = req.body;
     const version = await DocumentVersion.createVersion(
@@ -52,7 +52,7 @@ router.post('/:documentId/versions', authMiddleware, async (req, res) => {
 });
 
 // Get document versions
-router.get('/:documentId/versions', authMiddleware, async (req, res) => {
+router.get('/:documentId/versions', authenticateToken, async (req, res) => {
   try {
     const limit = req.query.limit || 50;
     const versions = await DocumentVersion.getDocumentVersions(req.params.documentId, limit);
@@ -63,7 +63,7 @@ router.get('/:documentId/versions', authMiddleware, async (req, res) => {
 });
 
 // Get specific version
-router.get('/versions/:versionId', authMiddleware, async (req, res) => {
+router.get('/versions/:versionId', authenticateToken, async (req, res) => {
   try {
     const version = await DocumentVersion.getVersion(req.params.versionId);
     res.json(version);
@@ -73,7 +73,7 @@ router.get('/versions/:versionId', authMiddleware, async (req, res) => {
 });
 
 // Compare versions
-router.get('/:documentId/versions/compare', authMiddleware, async (req, res) => {
+router.get('/:documentId/versions/compare', authenticateToken, async (req, res) => {
   try {
     const { fromVersionId, toVersionId } = req.query;
     const comparison = await DocumentVersion.compareVersions(fromVersionId, toVersionId);
@@ -84,7 +84,7 @@ router.get('/:documentId/versions/compare', authMiddleware, async (req, res) => 
 });
 
 // Add document comment
-router.post('/:documentId/comments', authMiddleware, async (req, res) => {
+router.post('/:documentId/comments', authenticateToken, async (req, res) => {
   try {
     const { comment, versionId, companyId } = req.body;
     const { query } = require('../database/config');
@@ -115,7 +115,7 @@ router.post('/:documentId/comments', authMiddleware, async (req, res) => {
 });
 
 // Get document comments
-router.get('/:documentId/comments', authMiddleware, async (req, res) => {
+router.get('/:documentId/comments', authenticateToken, async (req, res) => {
   try {
     const { query } = require('../database/config');
     const result = await query(
@@ -134,7 +134,7 @@ router.get('/:documentId/comments', authMiddleware, async (req, res) => {
 // APPROVAL WORKFLOWS
 
 // Create approval workflow
-router.post('/:companyId/approvals', authMiddleware, async (req, res) => {
+router.post('/:companyId/approvals', authenticateToken, async (req, res) => {
   try {
     const { documentId, approverIds } = req.body;
     const workflow = await ApprovalWorkflow.createWorkflow(
@@ -175,7 +175,7 @@ router.post('/:companyId/approvals', authMiddleware, async (req, res) => {
 });
 
 // Get workflow
-router.get('/:companyId/approvals/:workflowId', authMiddleware, async (req, res) => {
+router.get('/:companyId/approvals/:workflowId', authenticateToken, async (req, res) => {
   try {
     const workflow = await ApprovalWorkflow.getWorkflow(req.params.workflowId);
     const steps = await ApprovalWorkflow.getWorkflowSteps(req.params.workflowId);
@@ -190,7 +190,7 @@ router.get('/:companyId/approvals/:workflowId', authMiddleware, async (req, res)
 });
 
 // Approve step
-router.put('/:companyId/approvals/:workflowId/steps/:stepId/approve', authMiddleware, async (req, res) => {
+router.put('/:companyId/approvals/:workflowId/steps/:stepId/approve', authenticateToken, async (req, res) => {
   try {
     const { comment } = req.body;
     const step = await ApprovalWorkflow.approveStep(req.params.stepId, comment);
@@ -214,7 +214,7 @@ router.put('/:companyId/approvals/:workflowId/steps/:stepId/approve', authMiddle
 });
 
 // Reject step
-router.put('/:companyId/approvals/:workflowId/steps/:stepId/reject', authMiddleware, async (req, res) => {
+router.put('/:companyId/approvals/:workflowId/steps/:stepId/reject', authenticateToken, async (req, res) => {
   try {
     const { comment } = req.body;
     const step = await ApprovalWorkflow.rejectStep(req.params.stepId, comment);
@@ -238,7 +238,7 @@ router.put('/:companyId/approvals/:workflowId/steps/:stepId/reject', authMiddlew
 });
 
 // Get pending approvals
-router.get('/approvals/pending', authMiddleware, async (req, res) => {
+router.get('/approvals/pending', authenticateToken, async (req, res) => {
   try {
     const pending = await ApprovalWorkflow.getPendingApprovals(req.user.id);
     res.json(pending);
