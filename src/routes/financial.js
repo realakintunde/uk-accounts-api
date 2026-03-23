@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { authMiddleware } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const FinancialFeatures = require('../models/FinancialFeatures');
 const AuditLog = require('../models/AuditLog');
 
 // BUDGET ROUTES
 
 // Create budget
-router.post('/:companyId/budgets', authMiddleware, async (req, res) => {
+router.post('/:companyId/budgets', authenticateToken, async (req, res) => {
   try {
     const { name, fiscalYear, totalBudget, items } = req.body;
     const budget = await FinancialFeatures.createBudget(
@@ -44,7 +44,7 @@ router.post('/:companyId/budgets', authMiddleware, async (req, res) => {
 });
 
 // Get budgets
-router.get('/:companyId/budgets', authMiddleware, async (req, res) => {
+router.get('/:companyId/budgets', authenticateToken, async (req, res) => {
   try {
     const { fiscalYear } = req.query;
     const budgets = await FinancialFeatures.getBudgets(req.params.companyId, fiscalYear);
@@ -55,7 +55,7 @@ router.get('/:companyId/budgets', authMiddleware, async (req, res) => {
 });
 
 // Get budget items
-router.get('/:companyId/budgets/:budgetId/items', authMiddleware, async (req, res) => {
+router.get('/:companyId/budgets/:budgetId/items', authenticateToken, async (req, res) => {
   try {
     const items = await FinancialFeatures.getBudgetItems(req.params.budgetId);
     res.json(items);
@@ -67,7 +67,7 @@ router.get('/:companyId/budgets/:budgetId/items', authMiddleware, async (req, re
 // BANK RECONCILIATION ROUTES
 
 // Create bank account
-router.post('/:companyId/bank-accounts', authMiddleware, async (req, res) => {
+router.post('/:companyId/bank-accounts', authenticateToken, async (req, res) => {
   try {
     const { accountName, accountNumber, sortCode, bankName, currencyId } = req.body;
     const account = await FinancialFeatures.createBankAccount(
@@ -98,7 +98,7 @@ router.post('/:companyId/bank-accounts', authMiddleware, async (req, res) => {
 });
 
 // Get bank accounts
-router.get('/:companyId/bank-accounts', authMiddleware, async (req, res) => {
+router.get('/:companyId/bank-accounts', authenticateToken, async (req, res) => {
   try {
     const accounts = await FinancialFeatures.getBankAccounts(req.params.companyId);
     res.json(accounts);
@@ -108,7 +108,7 @@ router.get('/:companyId/bank-accounts', authMiddleware, async (req, res) => {
 });
 
 // Import bank transaction
-router.post('/:companyId/bank-transactions', authMiddleware, async (req, res) => {
+router.post('/:companyId/bank-transactions', authenticateToken, async (req, res) => {
   try {
     const { bankAccountId, transactionDate, reference, description, amount, type } = req.body;
     const transaction = await FinancialFeatures.importBankTransaction(
@@ -127,7 +127,7 @@ router.post('/:companyId/bank-transactions', authMiddleware, async (req, res) =>
 });
 
 // Get bank transactions
-router.get('/:companyId/bank-accounts/:accountId/transactions', authMiddleware, async (req, res) => {
+router.get('/:companyId/bank-accounts/:accountId/transactions', authenticateToken, async (req, res) => {
   try {
     const { reconciled } = req.query;
     const reconciledFilter = reconciled ? reconciled === 'true' : null;
@@ -139,7 +139,7 @@ router.get('/:companyId/bank-accounts/:accountId/transactions', authMiddleware, 
 });
 
 // Reconcile transaction
-router.put('/:companyId/bank-transactions/:transactionId/reconcile', authMiddleware, async (req, res) => {
+router.put('/:companyId/bank-transactions/:transactionId/reconcile', authenticateToken, async (req, res) => {
   try {
     const transaction = await FinancialFeatures.reconcileTransaction(req.params.transactionId);
 
@@ -164,7 +164,7 @@ router.put('/:companyId/bank-transactions/:transactionId/reconcile', authMiddlew
 // RECURRING ENTRIES
 
 // Create recurring entry
-router.post('/:companyId/recurring-entries', authMiddleware, async (req, res) => {
+router.post('/:companyId/recurring-entries', authenticateToken, async (req, res) => {
   try {
     const { description, amount, category, frequency, startDate, endDate } = req.body;
     const entry = await FinancialFeatures.createRecurringEntry(
@@ -185,7 +185,7 @@ router.post('/:companyId/recurring-entries', authMiddleware, async (req, res) =>
 });
 
 // Get recurring entries
-router.get('/:companyId/recurring-entries', authMiddleware, async (req, res) => {
+router.get('/:companyId/recurring-entries', authenticateToken, async (req, res) => {
   try {
     const entries = await FinancialFeatures.getRecurringEntries(req.params.companyId);
     res.json(entries);
@@ -197,7 +197,7 @@ router.get('/:companyId/recurring-entries', authMiddleware, async (req, res) => 
 // TAX SETTINGS
 
 // Set tax settings
-router.post('/:companyId/tax-settings', authMiddleware, async (req, res) => {
+router.post('/:companyId/tax-settings', authenticateToken, async (req, res) => {
   try {
     const { taxYearEnd, vatRate, corporationTaxRate, payrollTaxRate, nextTaxReturn } = req.body;
     const settings = await FinancialFeatures.setTaxSettings(
@@ -228,7 +228,7 @@ router.post('/:companyId/tax-settings', authMiddleware, async (req, res) => {
 });
 
 // Get tax settings
-router.get('/:companyId/tax-settings', authMiddleware, async (req, res) => {
+router.get('/:companyId/tax-settings', authenticateToken, async (req, res) => {
   try {
     const settings = await FinancialFeatures.getTaxSettings(req.params.companyId);
     res.json(settings || {});
