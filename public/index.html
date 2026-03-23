@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>UK Annual Accounts — Companies House Filing System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -883,6 +886,15 @@ const API_BASE = window.location.origin + '/api';
 let authToken = localStorage.getItem('uk_accounts_token') || null;
 let currentUser = JSON.parse(localStorage.getItem('uk_accounts_user') || '{}') || null;
 
+// DIAGNOSTIC - Log actual API URL being used
+console.log('='.repeat(60));
+console.log('[INIT] Page loaded at:', window.location.href);
+console.log('[INIT] Computed API_BASE:', API_BASE);
+console.log('[INIT] window.location.origin:', window.location.origin);
+console.log('[INIT] Auth Token exists:', !!authToken);
+console.log('[INIT] Current User:', currentUser);
+console.log('='.repeat(60));
+
 async function apiCall(method, endpoint, data, retries = 3) {
   const opts = {
     method,
@@ -895,8 +907,9 @@ async function apiCall(method, endpoint, data, retries = 3) {
   
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      console.log(`[API] Attempt ${attempt}/${retries}: ${method} ${API_BASE}${endpoint}`, data);
-      const res = await fetch(`${API_BASE}${endpoint}`, opts);
+      const fullUrl = `${API_BASE}${endpoint}`;
+      console.log(`[API] Attempt ${attempt}/${retries}: ${method} ${fullUrl}`, data);
+      const res = await fetch(fullUrl, opts);
       
       if (!res.ok) {
         if (res.status === 401) { logout(); throw new Error('Session expired. Please login again.'); }
@@ -926,15 +939,18 @@ async function doLogin(e) {
   e.preventDefault();
   const email = document.getElementById('login-email').value.trim();
   const pass = document.getElementById('login-pass').value;
+  console.log('[LOGIN] Starting login for email:', email);
   try {
     const res = await apiCall('POST', '/auth/login', { email, password: pass });
+    console.log('[LOGIN] Success:', res);
     authToken = res.data.token;
     currentUser = res.data.user;
     localStorage.setItem('uk_accounts_token', authToken);
     localStorage.setItem('uk_accounts_user', JSON.stringify(currentUser));
     enterApp();
   } catch(e) {
-    showAuthError(e.message || 'Login failed');
+    console.error('[LOGIN] Failed:', e.message);
+    showAuthError('⚠ Login Error: ' + e.message);
   }
 }
 
@@ -944,16 +960,27 @@ async function doRegister(e) {
   const email = document.getElementById('reg-email').value.trim();
   const pass  = document.getElementById('reg-pass').value;
   const pass2 = document.getElementById('reg-pass2').value;
-  if (pass !== pass2) { showAuthError('Passwords do not match'); return; }
+  
+  console.log('[REGISTER] Starting registration:', { email, name });
+  
+  if (pass !== pass2) { 
+    console.error('[REGISTER] Passwords do not match');
+    showAuthError('Passwords do not match'); 
+    return; 
+  }
+  
   try {
+    console.log('[REGISTER] Calling API with:', { email, password: '***', first_name: name });
     const res = await apiCall('POST', '/auth/register', { email, password: pass, first_name: name });
+    console.log('[REGISTER] Success:', res);
     authToken = res.data.token;
     currentUser = res.data.user;
     localStorage.setItem('uk_accounts_token', authToken);
     localStorage.setItem('uk_accounts_user', JSON.stringify(currentUser));
     enterApp();
   } catch(e) {
-    showAuthError(e.message || 'Registration failed');
+    console.error('[REGISTER] Failed:', e.message, e.stack);
+    showAuthError('⚠ Registration Error: ' + e.message);
   }
 }
 
@@ -1283,14 +1310,37 @@ async function updateDashboard() {
 
 // ════════════════════════════════ INIT ════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  // Diagnostic: Test API connectivity
-  fetch(API_BASE.replace('/api', '/health'))
-    .then(r => r.json())
-    .then(d => console.log('[API] Connection OK:', d))
-    .catch(e => console.error('[API] Connection FAILED:', e.message));
+  console.log('[INIT] DOMContentLoaded fired');
   
+  // Diagnostic: Test API connectivity - check multiple endpoints
+  console.log('[TEST] Testing API endpoints...');
+  
+  Promise.all([
+    fetch(`${API_BASE}/test`)
+      .then(r => {
+        console.log('[TEST] /api/test response status:', r.status);
+        return r.json();
+      })
+      .then(d => console.log('[TEST] /api/test SUCCESS:', d))
+      .catch(e => console.error('[TEST] /api/test FAILED:', e.message)),
+    
+    fetch('/health')
+      .then(r => {
+        console.log('[TEST] /health response status:', r.status);
+        return r.json();
+      })
+      .then(d => console.log('[TEST] /health SUCCESS:', d))
+      .catch(e => console.error('[TEST] /health FAILED:', e.message))
+  ]).then(() => {
+    console.log('[TEST] Initial diagnostics complete');
+  });
+  
+  // Check if user is logged in
   if (authToken && currentUser) {
+    console.log('[AUTH] User already authenticated, entering app');
     enterApp();
+  } else {
+    console.log('[AUTH] No auth token found, showing login screen');
   }
   
   // Set default FYE
