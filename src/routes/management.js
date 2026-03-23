@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authMiddleware } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const UserManagement = require('../models/UserManagement');
 const AuditLog = require('../models/AuditLog');
 const Notification = require('../models/Notification');
@@ -8,7 +8,7 @@ const Notification = require('../models/Notification');
 // USER MANAGEMENT ROUTES
 
 // Get company members
-router.get('/:companyId/members', authMiddleware, async (req, res) => {
+router.get('/:companyId/members', authenticateToken, async (req, res) => {
   try {
     const members = await UserManagement.getCompanyMembers(req.params.companyId);
     res.json(members);
@@ -18,7 +18,7 @@ router.get('/:companyId/members', authMiddleware, async (req, res) => {
 });
 
 // Add user to company
-router.post('/:companyId/members', authMiddleware, async (req, res) => {
+router.post('/:companyId/members', authenticateToken, async (req, res) => {
   try {
     const { userId, roleId } = req.body;
     const member = await UserManagement.addUserToCompany(
@@ -57,7 +57,7 @@ router.post('/:companyId/members', authMiddleware, async (req, res) => {
 });
 
 // Update user role
-router.put('/:companyId/members/:userId', authMiddleware, async (req, res) => {
+router.put('/:companyId/members/:userId', authenticateToken, async (req, res) => {
   try {
     const { roleId } = req.body;
     const updated = await UserManagement.updateUserRole(
@@ -85,7 +85,7 @@ router.put('/:companyId/members/:userId', authMiddleware, async (req, res) => {
 });
 
 // Remove user from company
-router.delete('/:companyId/members/:userId', authMiddleware, async (req, res) => {
+router.delete('/:companyId/members/:userId', authenticateToken, async (req, res) => {
   try {
     await UserManagement.removeUserFromCompany(req.params.companyId, req.params.userId);
 
@@ -110,7 +110,7 @@ router.delete('/:companyId/members/:userId', authMiddleware, async (req, res) =>
 // AUDIT LOG ROUTES
 
 // Get audit logs
-router.get('/:companyId/audit-logs', authMiddleware, async (req, res) => {
+router.get('/:companyId/audit-logs', authenticateToken, async (req, res) => {
   try {
     const limit = req.query.limit || 100;
     const offset = req.query.offset || 0;
@@ -122,7 +122,7 @@ router.get('/:companyId/audit-logs', authMiddleware, async (req, res) => {
 });
 
 // Get record history
-router.get('/:companyId/audit-logs/record/:recordId', authMiddleware, async (req, res) => {
+router.get('/:companyId/audit-logs/record/:recordId', authenticateToken, async (req, res) => {
   try {
     const { tableName } = req.query;
     const history = await AuditLog.getRecordHistory(req.params.recordId, tableName);
@@ -135,7 +135,7 @@ router.get('/:companyId/audit-logs/record/:recordId', authMiddleware, async (req
 // NOTIFICATION ROUTES
 
 // Get user notifications
-router.get('/notifications', authMiddleware, async (req, res) => {
+router.get('/notifications', authenticateToken, async (req, res) => {
   try {
     const unreadOnly = req.query.unread === 'true';
     const limit = req.query.limit || 50;
@@ -147,7 +147,7 @@ router.get('/notifications', authMiddleware, async (req, res) => {
 });
 
 // Get unread count
-router.get('/notifications/unread/count', authMiddleware, async (req, res) => {
+router.get('/notifications/unread/count', authenticateToken, async (req, res) => {
   try {
     const count = await Notification.getUnreadCount(req.user.id);
     res.json({ unreadCount: count });
@@ -157,7 +157,7 @@ router.get('/notifications/unread/count', authMiddleware, async (req, res) => {
 });
 
 // Mark notification as read
-router.put('/notifications/:notificationId/read', authMiddleware, async (req, res) => {
+router.put('/notifications/:notificationId/read', authenticateToken, async (req, res) => {
   try {
     const notification = await Notification.markAsRead(req.params.notificationId);
     res.json(notification);
@@ -167,7 +167,7 @@ router.put('/notifications/:notificationId/read', authMiddleware, async (req, re
 });
 
 // Mark all as read
-router.put('/notifications/read-all', authMiddleware, async (req, res) => {
+router.put('/notifications/read-all', authenticateToken, async (req, res) => {
   try {
     await Notification.markAllAsRead(req.user.id);
     res.json({ success: true });
@@ -177,7 +177,7 @@ router.put('/notifications/read-all', authMiddleware, async (req, res) => {
 });
 
 // Delete notification
-router.delete('/notifications/:notificationId', authMiddleware, async (req, res) => {
+router.delete('/notifications/:notificationId', authenticateToken, async (req, res) => {
   try {
     await Notification.deleteNotification(req.params.notificationId);
     res.json({ success: true });
