@@ -2,11 +2,21 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const helmet = require('helmet');
 const path = require('path');
+const fs = require('fs');
 const { setupDatabase } = require('./database/config');
 const { errorHandler } = require('./middleware/errorHandler');
+const { apiLimiter, loginLimiter, registerLimiter } = require('./middleware/rateLimiter');
+const tokenController = require('./controllers/tokenController');
 
 const app = express();
+
+// Security headers with Helmet
+app.use(helmet());
+
+// Disable x-powered-by header
+app.disable('x-powered-by');
 
 // Enhanced CORS configuration for production
 const corsOptions = {
@@ -16,6 +26,7 @@ const corsOptions = {
       'http://localhost:3000',
       'http://localhost:5000',
       /\.onrender\.com$/,
+      /\.linode\.com$/,
       /localhost/
     ];
     
@@ -31,7 +42,7 @@ const corsOptions = {
       callback(null, true);
     } else {
       console.warn(`CORS blocked origin: ${origin}`);
-      callback(null, true); // Allow anyway for debugging
+      callback(new Error('CORS not allowed'));
     }
   },
   credentials: true,
@@ -41,9 +52,20 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(morgan('combined'));
+
+// Request logging - to console for dev, to file for prod
+if (process.env.NODE_ENV === 'production') {
+  const logStream = fs.createWriteStream(path.join(__dirname, '../logs/access.log'), { flags: 'a' });
+  app.use(morgan('combined', { stream: logStream }));
+} else {
+  app.use(morgan('dev'));
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Apply API rate limiter to all /api routes
+app.use('/api/', apiLimiter);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -76,12 +98,15 @@ app.get('/', (req, res) => {
 // Serve static files from public directory
 app.use(express.static('public'));
 
+// Token refresh endpoint (before auth routes)
+app.post('/api/auth/refresh', tokenController.refreshToken);
+
 // Routes
 app.use('/api/companies', require('./routes/companies'));
 app.use('/api/statements', require('./routes/statements'));
 app.use('/api/documents', require('./routes/documents'));
 app.use('/api/filings', require('./routes/filings'));
-app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', loginLimiter, registerLimiter, require('./routes/auth'));
 app.use('/api/export', require('./routes/export'));
 app.use('/api/management', require('./routes/management'));
 app.use('/api/financial', require('./routes/financial'));

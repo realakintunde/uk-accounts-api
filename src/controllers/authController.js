@@ -33,11 +33,18 @@ exports.register = async (req, res, next) => {
     });
     console.log('[AUTH] User created successfully:', { id: newUser.id, email: newUser.email });
 
-    // Generate JWT token for immediate login after registration
-    const token = jwt.sign(
+    // Generate access token (1 hour expiry)
+    const accessToken = jwt.sign(
       { id: newUser.id, email: newUser.email, role: newUser.role },
       process.env.JWT_SECRET || 'secret',
-      { expiresIn: process.env.JWT_EXPIRY || '24h' }
+      { expiresIn: '1h' }
+    );
+
+    // Generate refresh token (30 days expiry)
+    const refreshToken = jwt.sign(
+      { id: newUser.id, email: newUser.email, type: 'refresh' },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '30d' }
     );
 
     console.log('[AUTH] Registration successful:', email);
@@ -51,7 +58,8 @@ exports.register = async (req, res, next) => {
           last_name: newUser.last_name,
           role: newUser.role,
         },
-        token,
+        accessToken,
+        refreshToken,
       },
       message: 'User registered successfully',
     });
@@ -95,10 +103,17 @@ exports.login = async (req, res, next) => {
     }
 
     console.log('[AUTH] Password verified, generating token for:', email);
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'secret',
-      { expiresIn: process.env.JWT_EXPIRE || '24h' }
+      { expiresIn: '1h' }
+    );
+
+    // Generate refresh token (30 days expiry)
+    const refreshToken = jwt.sign(
+      { id: user.id, email: user.email, type: 'refresh' },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '30d' }
     );
 
     console.log('[AUTH] Login successful:', email);
@@ -112,7 +127,8 @@ exports.login = async (req, res, next) => {
           last_name: user.last_name,
           role: user.role,
         },
-        token,
+        accessToken,
+        refreshToken,
       },
       message: 'Login successful',
     });

@@ -17,7 +17,8 @@
     if (STORED_VERSION !== CURRENT_VERSION) {
       console.log('[VERSION] Version mismatch! Clearing cache and reloading...');
       localStorage.setItem('app_version', CURRENT_VERSION);
-      localStorage.removeItem('uk_accounts_token');
+      localStorage.removeItem('uk_accounts_access_token');
+      localStorage.removeItem('uk_accounts_refresh_token');
       localStorage.removeItem('uk_accounts_user');
       // Hard reload to bypass browser cache
       if (window.location.reload) {
@@ -903,7 +904,8 @@ const API_BASE = '/api';
 
 console.log('[API_BASE] Configured as:', API_BASE);
 
-let authToken = localStorage.getItem('uk_accounts_token') || null;
+let accessToken = localStorage.getItem('uk_accounts_access_token') || null;
+let refreshToken = localStorage.getItem('uk_accounts_refresh_token') || null;
 let currentUser = JSON.parse(localStorage.getItem('uk_accounts_user') || '{}') || null;
 
 // DIAGNOSTIC - Log actual API URL being used
@@ -911,16 +913,56 @@ console.log('='.repeat(60));
 console.log('[INIT] Page loaded at:', window.location.href);
 console.log('[INIT] Computed API_BASE:', API_BASE);
 console.log('[INIT] window.location.origin:', window.location.origin);
-console.log('[INIT] Auth Token exists:', !!authToken);
+console.log('[INIT] Access Token exists:', !!accessToken);
+console.log('[INIT] Refresh Token exists:', !!refreshToken);
 console.log('[INIT] Current User:', currentUser);
 console.log('='.repeat(60));
+
+// Refresh access token when expired
+async function refreshAccessToken() {
+  if (!refreshToken) {
+    console.warn('[REFRESH] No refresh token available, logging out');
+    logout();
+    return false;
+  }
+
+  try {
+    console.log('[REFRESH] Attempting to refresh access token');
+    const opts = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${refreshToken}`
+      },
+      body: JSON.stringify({ refreshToken })
+    };
+
+    const res = await fetch(`${API_BASE}/auth/refresh?t=${Date.now()}`, opts);
+    
+    if (!res.ok) {
+      console.warn('[REFRESH] Token refresh failed, logging out');
+      logout();
+      return false;
+    }
+
+    const data = await res.json();
+    accessToken = data.accessToken;
+    localStorage.setItem('uk_accounts_access_token', accessToken);
+    console.log('[REFRESH] Token refreshed successfully');
+    return true;
+  } catch (error) {
+    console.error('[REFRESH] Error refreshing token:', error);
+    logout();
+    return false;
+  }
+}
 
 async function apiCall(method, endpoint, data, retries = 3) {
   const opts = {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+      ...(accessToken && { 'Authorization': `Bearer ${accessToken}` })
     }
   };
   if (data) opts.body = JSON.stringify(data);
@@ -932,7 +974,19 @@ async function apiCall(method, endpoint, data, retries = 3) {
       const res = await fetch(fullUrl, opts);
       
       if (!res.ok) {
-        if (res.status === 401) { logout(); throw new Error('Session expired. Please login again.'); }
+        if (res.status === 401) { 
+          console.warn('[API] Unauthorized (401), attempting token refresh');
+          const refreshed = await refreshAccessToken();
+          if (refreshed && attempt < retries) {
+            // Update authorization header with new token
+            opts.headers['Authorization'] = `Bearer ${accessToken}`;
+            // Retry this request with new token
+            attempt--;
+            continue;
+          }
+          logout(); 
+          throw new Error('Session expired. Please login again.'); 
+        }
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || `HTTP ${res.status}`);
       }
@@ -963,9 +1017,11 @@ async function doLogin(e) {
   try {
     const res = await apiCall('POST', '/auth/login', { email, password: pass });
     console.log('[LOGIN] Success:', res);
-    authToken = res.data.token;
+    accessToken = res.data.accessToken;
+    refreshToken = res.data.refreshToken;
     currentUser = res.data.user;
-    localStorage.setItem('uk_accounts_token', authToken);
+    localStorage.setItem('uk_accounts_access_token', accessToken);
+    localStorage.setItem('uk_accounts_refresh_token', refreshToken);
     localStorage.setItem('uk_accounts_user', JSON.stringify(currentUser));
     enterApp();
   } catch(e) {
@@ -993,9 +1049,11 @@ async function doRegister(e) {
     console.log('[REGISTER] Calling API with:', { email, password: '***', first_name: name });
     const res = await apiCall('POST', '/auth/register', { email, password: pass, first_name: name });
     console.log('[REGISTER] Success:', res);
-    authToken = res.data.token;
+    accessToken = res.data.accessToken;
+    refreshToken = res.data.refreshToken;
     currentUser = res.data.user;
-    localStorage.setItem('uk_accounts_token', authToken);
+    localStorage.setItem('uk_accounts_access_token', accessToken);
+    localStorage.setItem('uk_accounts_refresh_token', refreshToken);
     localStorage.setItem('uk_accounts_user', JSON.stringify(currentUser));
     enterApp();
   } catch(e) {
@@ -1031,9 +1089,11 @@ function enterApp() {
 }
 
 function logout() {
-  authToken = null;
+  accessToken = null;
+  refreshToken = null;
   currentUser = null;
-  localStorage.removeItem('uk_accounts_token');
+  localStorage.removeItem('uk_accounts_access_token');
+  localStorage.removeItem('uk_accounts_refresh_token');
   localStorage.removeItem('uk_accounts_user');
   document.body.classList.remove('app-visible');
   location.reload();
